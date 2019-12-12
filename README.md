@@ -21,7 +21,7 @@ Dans la dernière fenêtre SSH, lancer l'ARINC en lançant le script goK.sh.
 
 Faire de même avec la seconde Raspberry Pi.
 
-test git
+
 
 
 Côté Sol, compiler de même les fichiers. 
