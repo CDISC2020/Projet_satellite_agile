@@ -1,3 +1,9 @@
+#on ne versionne pas les executables generes par le code du repository
+main_Com_ST
+main_Control
+main_run
+
+
 # Prerequisites
 *.d
 
