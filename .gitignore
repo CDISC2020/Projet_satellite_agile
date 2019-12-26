@@ -2,7 +2,11 @@
 main_Com_ST
 main_Control
 main_run
+main_Ground
 
+# autres
+listpid
+LogErreur.txt
 
 # Prerequisites
 *.d

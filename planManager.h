@@ -16,7 +16,8 @@
 
 using namespace std;
 
-class PlanManager {
+class PlanManager 
+{
 protected:
 	Plan Plans[PLANS_BUFFER_SIZE];
 	int nPlan;

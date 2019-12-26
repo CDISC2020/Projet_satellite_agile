@@ -11,14 +11,11 @@
 
 using namespace std;
 
-class CameraController {
-private:
-
+class CameraController 
+{
 public:
 	CameraController();	
-	bool photoShoot(string fileName, int exposure); // pitch, yaw and roll
+	bool photoShoot(string fileName, int exposure);
 };
-
-
 
 #endif

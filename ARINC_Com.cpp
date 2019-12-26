@@ -73,10 +73,11 @@ QueuingPort::QueuingPort (int m, int p, char* S) {
                 strcpy(host_s, S);
 
                 // Initialisation of host entry
-                if ((s_h = gethostbyname(host_s)) == NULL) {
+                if ((s_h = gethostbyname(host_s)) == NULL) 
+		{
                         perror("gethostbyname");
                         exit(1);
-                        } 
+		} 
 
                 // Initialisation of server address
                 bzero((char *) &s_a, sizeof(s_a));
@@ -85,7 +86,8 @@ QueuingPort::QueuingPort (int m, int p, char* S) {
                 s_a.sin_port = port /* SERVER port */ ;
 
                 // Creation of the Socket
-                 if ((s_d = socket(AF_INET, SOCK_DGRAM, 0)) == SOCK_ERR) {
+                 if ((s_d = socket(AF_INET, SOCK_DGRAM, 0)) == SOCK_ERR) 
+		 {
                         perror("C-> socket");
                         bye(s_d);
                 }

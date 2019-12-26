@@ -7,7 +7,8 @@
 
 #include <netinet/in.h>
 
-class QueuingPort {
+class QueuingPort 
+{
 protected:
 	char buffer [MAXLGMSG];
 	int size;
@@ -35,7 +36,8 @@ public:
 };
 
 
-class SamplingPort : public QueuingPort {
+class SamplingPort : public QueuingPort 
+{
 private:
 	int nfds;			// number of selected input descriptors by select
 	struct timeval timeout;		// Timeout setting variable
@@ -98,7 +100,8 @@ struct ModeStruct {
 };
 
 typedef struct statusControl statusControl;
-struct statusControl {
+struct statusControl 
+{
 	int code;
 	bool returnControl;
 };

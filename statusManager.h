@@ -11,8 +11,8 @@ using namespace std;
 
 const int MAX_NOTIFICATION = 1000;
 
-class StatusManager{
-
+class StatusManager
+{
 protected:
 	string pathLogFile;
 

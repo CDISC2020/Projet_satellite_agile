@@ -13,7 +13,8 @@ using namespace std;
 
 const int maxInstructions = 100;
 
-class Plan{
+class Plan
+{
 	protected:
 		GenericInstruction* ActivityList[maxInstructions]; 
 		int nInstructions;

@@ -24,7 +24,7 @@ PlanManager PM;
 int responseController = 0;
 QueuingPort* channelController; 	// Client_PM vers controller
 QueuingPort* channelSM; 		// Client_PM vers com ground / SM
-QueuingPort* channelReceptionPM; 		// Server_PM	
+QueuingPort* channelReceptionPM; 	// Server_PM	
 
 
 /*
@@ -66,10 +66,10 @@ struct PlanFilePath {
 
 */
 
-
-
-void * Server_PM(void *args){
+void * Server_PM(void *args)
+{
 	//PlanManager* PM = (PlanManager*) args;
+	cout << "Bonjour du Thread Processeur " << tid_FD << endl;
 
 	int x=0;
 
@@ -77,7 +77,8 @@ void * Server_PM(void *args){
 	PlanFilePath* f;
 	statusControl* r;
 
-	if (gethostname(s, 100) != 0) {
+	if (gethostname(s, 100) != 0) 
+	{
 	    perror("S-> gethostname");
 	    exit(1);
 	}
@@ -89,41 +90,45 @@ void * Server_PM(void *args){
 	char buffer[1024];
 	int i; for(i=0; i>1024; i++) buffer[i] = '\0';
 
-	while(1) {
-
+	while(1) 
+	{
 		channelReceptionPM->RecvQueuingMsg(buffer);
 		f = (PlanFilePath*)buffer;
 
-		if(f->code == 3) {
+		if(f->code == 3) 
+		{
 			cout<<"Msg("<<x++<<"):  path ="<<f->filepath<<endl;
 			PM.generatePlan(f->filepath);
-		} else if (f->code == 2) {
+		} 
+		else if (f->code == 2) 
+		{
 			r = (statusControl*)buffer;
 			cout<<"Msg("<<x++<<"):  code retour ="<<r->returnControl<<")"<<endl;
-			if (r->returnControl == false) {
+			if (r->returnControl == false) 
+			{
 				responseController = -1;
 			}
-			else{
+			else
+			{
 				responseController = 1;
 			}
 		}
-	
 	}
 
-cout << "Terminaison du Thread " << tid_FD << endl;
-return NULL;
+	cout << "Terminaison du Thread " << tid_FD << endl;
+	return NULL;
 }
 
-/* 
-DEBUT PARTIE SURETE DE FONCTIONNEMENT 
-	*/
+ 
+//DEBUT PARTIE SURETE DE FONCTIONNEMENT 
+
 
 Watchdog watchdog;
 bool mode; // 'false' pour follower et 'true' pour leader
 // En pratique, le mode devra aussi être envoyé au ComGroundManager
 
-
-void changeMode() {
+void changeMode() 
+{
 	// passage en mode Leader : le mode doit être envoyé au ComGroundManager
 	mode=true;
 	
@@ -134,81 +139,89 @@ void changeMode() {
 	channelSM->SendQueuingMsg((char*)&m, sizeof(ModeStruct));
 }
 
-void before() {
+void before() 
+{
 // Vérification watchdog, recouvrement si besoin
 
-	if (mode==true) {
-	watchdog.set(); 		// I'm alive!!!!!
+	if (mode==true) 
+	{
+		watchdog.set(); 		// I'm alive!!!!!
 
-	cout << "Leader : I'm alive" << endl;
-
+		cout << "Leader : I'm alive" << endl;
 	}
 
 
-	if (mode==false) { 
+	if (mode==false) 
+	{ 
 		sleep(1);
 		int state;
-	cout << "Follower : Test watchdog" << endl;
+		cout << "Follower : Test watchdog" << endl;
 		state = watchdog.readw(); // test watchdog
-	cout << "State " << state << endl;
+		cout << "State " << state << endl;
 
 		// Recovery
-		if(state==0) {
-	cout << "Follower : changement de mode" << endl;
+		if(state==0) 
+		{
+			cout << "Follower : changement de mode" << endl;
 			changeMode(); // changement de mode
 		}
 	}
 
 }
 
-
-void proceed() {
+void proceed() 
+{
 // Fonctionnement normal
 	sleep(1);
-	cout << "Processing..." << endl;
+	cout << "Fonctionnement" << endl;
 	PM.executePlan(channelController, &responseController,channelSM );
-
-
 }
 
-sig_t bye() {
+sig_t bye() 
+{
 	cout << "Mort........" << endl;
 	GPIOWrite(3,LOW);
 	exit(0);
 }
 
-void after() {
+void after() 
+{
 	// .... do nothing
 }
 
-
-void * Client_PM(void *args){
+void * Client_PM(void *args)
+{
 	// Partie Surete de fonctionnement
-
 	mode = false; // par défaut, follower
 	ModeStruct m;
 	m.code = 6;
 	m.rpiMode = false;
 	cout << endl << "Initialisation mode Follower" << endl;
 	channelSM->SendQueuingMsg((char*)&m, sizeof(ModeStruct));
+		
+	signal(SIGINT, (sig_t)bye);
 
-	while(1) {
+	while(1) 
+	{
 		before();
 		proceed();
 		after();
 	}
 
-return NULL;
+	return NULL;
 }
 
-/* 
-FIN PARTIE SURETE DE FONCTIONNEMENT 
-	*/
+ 
+//FIN PARTIE SURETE DE FONCTIONNEMENT 
+	
 
+int  main (int argc,char* argv[]) 
+{
 
-int  main (int argc,char* argv[]) {
+	cout << "bonjour je suis le main_PM" << endl;
 
-	if (argc!=2) {
+	if (argc!=2) 
+	{
 		printf("T'as oublie l'argument pinpin ! Le hostname... \n");
 		exit (-1);
 	}
@@ -216,19 +229,17 @@ int  main (int argc,char* argv[]) {
 
 	char s[100];
 
-	if (gethostname(s, 100) != 0) {
+	if (gethostname(s, 100) != 0) 
+	{
 	    perror("S-> gethostname");
 	    exit(1);
 	}
 
-	//cout << "Host name " << s << endl; 
-	signal(SIGINT, (sig_t)bye);
-
+	cout << "Host name " << s << endl; 
+	
 	channelController = new QueuingPort(0, 18002, argv[1]); 	// Client_PM vers controller
 	channelSM = new QueuingPort(0, 18003, argv[1]); 		// Client_PM vers com ground / SM
 	channelReceptionPM = new QueuingPort(1, 18001, s); 		// Server_PM	
-
-	cout << "Bonjour du Thread Fonctionnel " << getpid() << endl;
 
 	// generate thread
 	pthread_attr_t *thread_attributes;
@@ -245,6 +256,7 @@ int  main (int argc,char* argv[]) {
 	if (pthread_create(thread, thread_attributes, Server_PM,(void *) NULL) != 0) 
 		perror ("Thread_Server-> Failure detector thread pb!");
 
+
 	tid_FP = 2;
 
 	thread_attributes=(pthread_attr_t *)malloc(sizeof(pthread_attr_t));
@@ -257,9 +269,5 @@ int  main (int argc,char* argv[]) {
 
 	while(1) {	}
 
-
-	
-return 0;
-
-
+	return 0;
 }

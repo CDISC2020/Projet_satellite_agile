@@ -9,7 +9,8 @@ using namespace std;
 #include "ARINC_Com.h"
 
 typedef struct Plan Plan;
-struct Plan {
+struct Plan 
+{
 	int code;
 	char name[11];
 };
@@ -17,59 +18,57 @@ struct Plan {
 int main (int argc,char* argv[]) 
 {
 
-if (argc!=2) 
-{
-	printf("T'as oublie l'argument banane ! Le hostname... \n");
-	exit (-1);
-}
+	if (argc!=2) 
+	{
+		printf("T'as oublie l'argument banane ! Le hostname... \n");
+		exit (-1);
+	}
 
-// Suite si hostname en argument
+	// Suite si hostname en argument
 
-cout << "Host name " << argv[1] << endl; 
+	cout << "Host name " << argv[1] << endl; 
 
-Plan p;
-p.code = 5;
-p.name[0] = 'p';
-p.name[1] = 'l';
-p.name[2] = 'a';
-p.name[3] = 'n';
-p.name[4] = '1';
-p.name[5] = '_';
-p.name[6] = '1';
-p.name[7] = '.';
-p.name[8] = 't';
-p.name[9] = 'x';
-p.name[10] = 't';
-p.name[11] = '\0';
-p.name[12] = '\0';
-p.name[13] = '\0';
-p.name[14] = '\0';
-p.name[15] = '\0';
-
-
-char s[100];
-
-if (gethostname(s, 100) != 0) {
-	perror("S-> gethostname");
-	exit(1);
-}
-
-QueuingPort channelOut(0, 18003, argv[1]); 	//Client
-channelOut.Display();
-
-/*------------- Sending the first plan --------------*/
-channelOut.SendQueuingMsg((char*)&p, sizeof(Plan));
+	Plan p;
+	p.code = 5;
+	p.name[0] = 'p';
+	p.name[1] = 'l';
+	p.name[2] = 'a';
+	p.name[3] = 'n';
+	p.name[4] = '1';
+	p.name[5] = '_';
+	p.name[6] = '1';
+	p.name[7] = '.';
+	p.name[8] = 't';
+	p.name[9] = 'x';
+	p.name[10] = 't';
+	p.name[11] = '\0';
+	p.name[12] = '\0';
+	p.name[13] = '\0';
+	p.name[14] = '\0';
+	p.name[15] = '\0';
 
 
-/*------------- Sending the second plan --------------*/
-p.name[4] = '2';
-channelOut.SendQueuingMsg((char*)&p, sizeof(Plan));
+	char s[100];
 
-/*------------- Sending other version --------------*/
+	if (gethostname(s, 100) != 0) 
+	{
+		perror("S-> gethostname");
+		exit(1);
+	}
 
-p.name[6] = '2';
-channelOut.SendQueuingMsg((char*)&p, sizeof(Plan));
+	QueuingPort channelOut(0, 18003, argv[1]); 	//Client
+	channelOut.Display();
+
+	/*------------- Sending the first plan --------------*/
+	channelOut.SendQueuingMsg((char*)&p, sizeof(Plan));
 
 
+	/*------------- Sending the second plan --------------*/
+	p.name[4] = '2';
+	channelOut.SendQueuingMsg((char*)&p, sizeof(Plan));
 
+	/*------------- Sending other version --------------*/
+
+	p.name[6] = '2';
+	channelOut.SendQueuingMsg((char*)&p, sizeof(Plan));
 }

@@ -29,65 +29,71 @@ char mode; // 'F' pour follower et 'L' pour leader
 // En pratique, le mode devra aussi être envoyé au ComGroundManager
 
 
-void changeMode() {
+void changeMode() 
+{
 	// passage en mode Leader : le mode doit être envoyé au ComGroundManager
 	mode='L';
 }
 
-void before() {
-// Vérification watchdog, recouvrement si besoin
+void before() 
+{
+	// Vérification watchdog, recouvrement si besoin
 
-	if (mode=='L') {
-	watchdog.set(); 		// I'm alive!!!!!
-
-	cout << "Leader : I'm alive" << endl;
-
+	if (mode=='L') 
+	{
+		watchdog.set(); 		// I'm alive!!!!!
+		cout << "Leader : I'm alive" << endl;
 	}
 
 
-	if (mode=='F') { 
+	if (mode=='F') 
+	{
 		sleep(1);
 		int state;
-	cout << "Follower : Test watchdog" << endl;
+		cout << "Follower : Test watchdog" << endl;
 		state = watchdog.readw(); // test watchdog
-	cout << "State " << state << endl;
+		cout << "State " << state << endl;
 
 		// Recovery
-		if(state==0) {
-	cout << "Follower : changement de mode" << endl;
+		if(state==0) 
+		{
+			cout << "Follower : changement de mode" << endl;
 			changeMode(); // changement de mode
 		}
 	}
-
 }
 
 
-void proceed() {
-// Fonctionnement normal
+void proceed() 
+{
+	// Fonctionnement normal
 	cout << "Fonctionnement" << endl;
 	planManager.executePlan();
-
-
 }
 
-sig_t bye() {
+sig_t bye() 
+{
 	cout << "Mort........" << endl;
 	GPIOWrite(3,LOW);
 	exit(0);
 }
 
-void after() {
+void after() 
+{
 	// .... do nothing
 }
 
-int main(int argc, char** argv) {
-	
+int main(int argc, char** argv) 
+{	
+	cout << "je suis main_plan" << endl;
+
 	mode = 'F'; // par défaut, follower
 	planManager.generatePlan("plan1_1.txt");
 
 	signal(SIGINT, (sig_t)bye);
 
-	while(1) {
+	while(1) 
+	{
 		before();
 		proceed();
 		after();

@@ -16,36 +16,32 @@ using namespace std;
 #include <unistd.h>
 
 
-Watchdog::Watchdog() {
-
+Watchdog::Watchdog() 
+{
 	// activation des GPIO
-	
 	GPIOExport(3);
 	GPIOExport(2);
 
 	// choix du mode (in/out) des GPIO
-
 	GPIODirection(3,OUT);
 	GPIODirection(2,IN);
-
 }
 
 
-void Watchdog::set() {
+void Watchdog::set() 
+{
 	// I'm alive!!!!
 	GPIOWrite(3,HIGH);
 	usleep(300);
 	GPIOWrite(3,LOW);
 	usleep(100);
-
 }
 
 
-int Watchdog::readw() {
-
+int Watchdog::readw() 
+{
 	// Lecture de l'état du GPIO
 	return GPIORead(2);
-
 }
 
 

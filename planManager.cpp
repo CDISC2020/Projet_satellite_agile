@@ -13,173 +13,188 @@
 using namespace std;
 
 
-PlanManager::PlanManager(){
+PlanManager::PlanManager()
+{
 	this->nPlan = 0;
 	this->ptInstruction = 0;
 	this->indexPlan = 0;
 }
 
+void PlanManager::executePlan(QueuingPort* ChannelEmission, int* responseController,QueuingPort* ChannelErreur)
+{
 
-void PlanManager::executePlan(QueuingPort* ChannelEmission, int* responseController,QueuingPort* ChannelErreur){
+	if (nPlan > 0) 
+	{
+		Plan P = this->Plans[indexPlan];
+		GenericInstruction* currentInst;
 
+		bool jumpInstruction;
+		//for (int i = 0 ; i < P.getnInstructions(); i++)
 
-if (nPlan > 0) {
-	Plan P = this->Plans[indexPlan];
-	GenericInstruction* currentInst;
+		currentInst = P.getInstruction(ptInstruction);
+		jumpInstruction = false;
 
-	bool jumpInstruction;
-	//for (int i = 0 ; i < P.getnInstructions(); i++){
+		//while(wt){
 
-	currentInst = P.getInstruction(ptInstruction);
-	jumpInstruction = false;
+		time_t t = time(0);
+		struct tm * now = localtime(&t);
 
-	//while(wt){
+		int group = currentInst->getIndex();
+		if ((this->bannedInstructions[group]) == true) jumpInstruction = true;
+		
+		if ((jumpInstruction == false) && (nPlan > 0) ) 
+		{
+			if ((now->tm_hour == currentInst->getHour()) & (now->tm_min == currentInst->getMin()) & (now->tm_sec == currentInst->getSec())) 
+			{
+			/*
+			/ Codes des messages a envoyer :
+			/ 0 = Attitude
+			/ 1 = Photo
+			/ 2 = RetourController
+			/ 3 = PlanFilePath
+			/ 4 = Status
+			/ 5 = data
+			*/
+				cout<<"C'est l'heure ";
+				bool start_timeout = false;
+	/*---------------------------------------------------------*/
+				// To find the type of order: photo or attitude
+				if (currentInst->getType() == 'p') 
+				{
+					Camera C;
+					C.code = 1; 
+					C.exposure = ((PhotoInstruction*)currentInst)->getExposure();
+					string aux = ((PhotoInstruction*)currentInst)->getPhotoName(); 
+					strcpy(C.photoName,aux.c_str());
 
-	time_t t = time(0);
-	struct tm * now = localtime(&t);
+					cout << endl << "New photo! Smile!" << endl;
+					ChannelEmission->SendQueuingMsg((char*)&C, sizeof(Camera));
+					//myCameraController->photoShoot(photoName, exposure);
+					
+					start_timeout = true;
+				} 
+				else if (currentInst->getType() == 'a') 
+				{
+					Attitude A;
+					A.code = 0;
+					A.yaw = ((AttitudeInstruction*)currentInst)->getYaw();
+					A.pitch = ((AttitudeInstruction*)currentInst)->getPitch();
+					A.roll = ((AttitudeInstruction*)currentInst)->getRoll();
 
-	int group = currentInst->getIndex();
-	if ((this->bannedInstructions[group]) == true) jumpInstruction = true;
-
-	if ((jumpInstruction == false) && (nPlan > 0) ) {
-		if ((now->tm_hour == currentInst->getHour()) & (now->tm_min == currentInst->getMin()) & (now->tm_sec == currentInst->getSec())) {
-		/*
-		/ Codes des messages a envoyer :
-		/ 0 = Attitude
-		/ 1 = Photo
-		/ 2 = RetourController
-		/ 3 = PlanFilePath
-		/ 4 = Status
-		/ 5 = data
-		*/
-			cout<<"C'est l'heure ";
-			bool start_timeout = false;
-/*---------------------------------------------------------*/
-			// To find the type of order: photo or attitude
-			if (currentInst->getType() == 'p') {
-				Camera C;
-				C.code = 1; 
-				C.exposure = currentInst->getExposure();
-				string aux = currentInst->getPhotoName(); 
-				strcpy(C.photoName,aux.c_str());
-
-				cout << endl << "New photo! Smile!" << endl;
-				ChannelEmission->SendQueuingMsg((char*)&C, sizeof(Camera));
-				//myCameraController->photoShoot(photoName, exposure);
-				
-				start_timeout = true;
-			} else if (currentInst->getType() == 'a') {
-
-				Attitude A;
-				A.code = 0;
-				A.yaw = currentInst->getYaw();
-				A.pitch = currentInst->getPitch();
-				A.roll = currentInst->getRoll();
-
-				cout << endl << "New attitude change!!" << endl;
-				ChannelEmission->SendQueuingMsg((char*)&A, sizeof(Attitude));
-				//myAttitudeController->attitudeChange(yaw, pitch, roll); // roll(not used)
-				
-				start_timeout = true;
-			}else {
-				Status S;
-				S.code = 4;
-				S.errorID = 2; // A changer.		
-				sprintf(S.description, "Wrong instruction type, Plan %d.%d : Line #%d : Index : #%d ",P.getID(),P.getVersion(), ptInstruction+1,  group);
-
-				ChannelErreur->SendQueuingMsg((char*)&S, sizeof(Status));
-			}
-/*---------------------------------------------------------*/
-
-			/*-------------Wait for Time Out of the controller response-----------*/
-			int time_out = 1000000; 
-			if (start_timeout == true) {
-				while (time_out > 0 && *responseController == 0){
-					usleep(1);
-					time_out--;
+					cout << endl << "New attitude change!!" << endl;
+					ChannelEmission->SendQueuingMsg((char*)&A, sizeof(Attitude));
+					//myAttitudeController->attitudeChange(yaw, pitch, roll); // roll(not used)
+					
+					start_timeout = true;
 				}
-			}
-			/*-------------------------------------------------------------------*/
+				else 
+				{
+					Status S;
+					S.code = 4;
+					S.errorID = 2; // A changer.		
+					sprintf(S.description, "Wrong instruction type, Plan %d.%d : Line #%d : Index : #%d ",P.getID(),P.getVersion(), ptInstruction+1,  group);
 
-			/*--------------------   Management of the errors    ----------------*/
-			if (*responseController != 1) {
-				bannedInstructions[group] = true; 
-				if (*responseController == -1){
-					cout<<"Instruction "<<group<<" banned : error from controller"<<endl;
+					ChannelErreur->SendQueuingMsg((char*)&S, sizeof(Status));
+				}
+	/*---------------------------------------------------------*/
+
+				/*-------------Wait for Time Out of the controller response-----------*/
+				int time_out = 1000000; 
+				if (start_timeout == true) 
+				{
+					while (time_out > 0 && *responseController == 0)
+					{
+						usleep(1);
+						time_out--;
+					}
+				}
+				/*-------------------------------------------------------------------*/
+
+				/*--------------------   Management of the errors    ----------------*/
+				if (*responseController != 1) 
+				{
+					bannedInstructions[group] = true; 
+					if (*responseController == -1)
+					{
+						cout<<"Instruction "<<group<<" banned : error from controller"<<endl;
 						Status S_controller;
 						S_controller.code = 4;
 
-						if (currentInst->getType() == 'a'){
+						if (currentInst->getType() == 'a')
+						{
 							// The attitude was not reached 
 							S_controller.errorID = 0; 	// Look the error list
 							sprintf(S_controller.description, "Attitude not reached. Plan %d.%d : Line #%d : Index #%d ",P.getID(),P.getVersion(), ptInstruction+1,  group);
 						}	
-						if (currentInst->getType() == 'p'){
+						if (currentInst->getType() == 'p')
+						{
 							// The photo was not taken 
 							S_controller.errorID = 1; // Look the error list
 							sprintf(S_controller.description, "Photo not taken. Plan %d.%d : Line #%d : Index #%d ",P.getID(),P.getVersion(), ptInstruction+1,  group);	
 						}
 						
-							
-						
 						cout << S_controller.description << endl;
 
 						ChannelErreur->SendQueuingMsg((char*)&S_controller, sizeof(Status));
+					}
+					if (time_out == 0)
+					{
+						cout<<"Instruction "<<group<<" banned : timeout."<<endl;
+						// Time out in the response of the attitude controller
+					}
 				}
-				if (time_out == 0){
-					cout<<"Instruction "<<group<<" banned : timeout."<<endl;
-					// Time out in the response of the attitude controller
-				}
-			}
-			/*-------------------------------------------------------------------*/
-			
-			/*-----------------   Photo sending to the ComGrdMnger  -------------*/
-			if ( *responseController == 1  && currentInst->getType() == 'p') {	
+				/*-------------------------------------------------------------------*/
+				
+				/*-----------------   Photo sending to the ComGrdMnger  -------------*/
+				if ( *responseController == 1  && currentInst->getType() == 'p') 
+				{
 					PlanFilePath PhotoPath;
 					PhotoPath.code = 3;
-					string aux =  currentInst->getPhotoName();
+					string aux =  ((PhotoInstruction*)currentInst)->getPhotoName();
 					strcpy (PhotoPath.filepath , aux.c_str()) ; 	
 					printf("Sending the photo %s \n", PhotoPath.filepath);
 					ChannelErreur->SendQueuingMsg((char*)&PhotoPath, sizeof(PlanFilePath));
-			
+				}
+				/*-------------------------------------------------------------------*/
+
+				*responseController = 0;
+				ptInstruction++;
+
+
+			} 
+			// Cas où le temps de l'instruction est déjà passé... on l'aura jamais !
+			else if ( ((now->tm_hour == currentInst->getHour()) && (now->tm_min > currentInst->getMin())) 
+				||((now->tm_min  == currentInst->getMin())  && (now->tm_sec > currentInst->getSec()))) 
+			{ 
+				cout<<"L'heure est deja passé "<<ptInstruction<<endl;
+				Status S_heure;
+				S_heure.code = 4;
+				S_heure.errorID = 3;
+				ChannelErreur->SendQueuingMsg((char*)&S_heure, sizeof(Status));
+
+				ptInstruction++;
 			}
-			/*-------------------------------------------------------------------*/
-
-			*responseController = 0;
+		} 
+		else if (jumpInstruction) 
+		{
 			ptInstruction++;
-
-		
-
-		} else if (	// Cas où le temps de l'instruction est déjà passé... on l'aura jamais !
-			 ( (now->tm_hour == currentInst->getHour())  && 	( now->tm_min > currentInst->getMin() )) ||
-									( (now->tm_min  == currentInst->getMin() )  &&  ( now->tm_sec > currentInst->getSec() ))
-														) { 
-					cout<<"L'heure est deja passé "<<ptInstruction<<endl;
-					Status S_heure;
-					S_heure.code = 4;
-					S_heure.errorID = 3;
-					ChannelErreur->SendQueuingMsg((char*)&S_heure, sizeof(Status));
-
-					ptInstruction++;
-		
+			cout<<"Instruction jumped"<<endl;
 		}
-	} else if (jumpInstruction) {
-		ptInstruction++;
-		cout<<"Instruction jumped"<<endl;
-	}
 
-	//}
-	if (ptInstruction >= P.getnInstructions()){ // Fin d'un plan d'instruction, on passe au suivant.
-				ptInstruction = 0;
-				indexPlan = (indexPlan + 1)%PLANS_BUFFER_SIZE;
-				nPlan--;
-				for (int k=0; k< 100; k++) this->bannedInstructions[k] = false;
+		//}
+		if (ptInstruction >= P.getnInstructions()) // Fin d'un plan d'instruction, on passe au suivant.
+		{
+			ptInstruction = 0;
+			indexPlan = (indexPlan + 1)%PLANS_BUFFER_SIZE;
+			nPlan--;
+			for (int k=0; k< 100; k++) this->bannedInstructions[k] = false;
 		}
+		
 	} // end big if
 }
 
-void PlanManager::generatePlan(const char* filepath){
-
+void PlanManager::generatePlan(const char* filepath)
+{
 	int version;
 	int num_plan;
 	bool existnewPlan = false;
@@ -196,40 +211,42 @@ void PlanManager::generatePlan(const char* filepath){
 	cout << "version "<< version << endl;
 	cout << "num_plan "<< num_plan<< endl;
 
-	for (int i = 0 ; i < nPlan; i++){
+	for (int i = 0 ; i < nPlan; i++)
+	{
 		cout << "nplan " << Plans[(i+indexPlan)%PLANS_BUFFER_SIZE].getID()<< endl;
 		int k = (i+indexPlan)%PLANS_BUFFER_SIZE;
-		if (  (Plans[k].getID()==num_plan) & (k != indexPlan)  ){
-				cout << "hola " << Plans[k].getVersion()<<endl;
-				if (Plans[k].getVersion() < version){
-					Plans[k] = myPlan;
-					cout << " New version of an existing plan "<< endl;
-				}
-				existnewPlan = true;
+		if (  (Plans[k].getID()==num_plan) & (k != indexPlan)  )
+		{
+			cout << "hola " << Plans[k].getVersion()<<endl;
+			if (Plans[k].getVersion() < version)
+			{
+				Plans[k] = myPlan;
+				cout << " New version of an existing plan "<< endl;
+			}
+			existnewPlan = true;
 		}
 	}
 
 	cout<<endl<<"Le plan existe ? "<<existnewPlan<<endl;
-	if (!existnewPlan){
+	if (!existnewPlan)
+	{
 			Plans[(nPlan+indexPlan)%PLANS_BUFFER_SIZE] = myPlan;
 			nPlan++;
 	}
 	cout<<"Plan ajouté"<<endl;
-
 }
 
-
-void PlanManager::printPlan(int indexPlan){
-     if (indexPlan >=nPlan){
-            cout << "Plan " << indexPlan << "does not exist"<< endl;
-        return;
-     }
+void PlanManager::printPlan(int indexPlan)
+{
+	if (indexPlan >=nPlan)
+	{
+		cout << "Plan " << indexPlan << "does not exist"<< endl;
+		return;
+	}
 	this->Plans[indexPlan].printPlan();
-
 }
 
-
-
-void PlanManager::pushBan(int index){
+void PlanManager::pushBan(int index)
+{
 	this->bannedInstructions[index]= true;
 }

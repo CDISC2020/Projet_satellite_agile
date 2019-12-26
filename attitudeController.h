@@ -11,14 +11,12 @@
 
 using namespace std;
 
-class AttitudeController {
-private:
-
+class AttitudeController 
+{
 public:
 	AttitudeController();	
 	bool attitudeChange(int roll, int pitch, int yaw); // roll(not used), pitch, yaw
 };
-
 
 
 #endif
