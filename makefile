@@ -24,6 +24,7 @@ all:
 	$(MAKE) Control_run
 	$(MAKE) kernel
 	$(MAKE) clean
+	$(MAKE) success
 
 ARINC_Com:  ARINC_Com.cpp ARINC_Com.h
 	$(CC) -c ARINC_Com.cpp ARINC_Com.h
@@ -72,3 +73,7 @@ kernel: kernel_arinc.cpp
 
 clean:
 	rm *.o *.gch
+
+success:
+	echo "\n[ Make successful! ]\n"
+
