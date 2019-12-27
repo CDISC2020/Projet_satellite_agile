@@ -12,9 +12,8 @@
 
 using namespace std;
 
-class Watchdog {
-private:
-
+class Watchdog 
+{
 public:
 	Watchdog();
 	void set();
