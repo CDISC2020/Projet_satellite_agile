@@ -89,9 +89,18 @@ kernel: $(ARINC)kernel_arinc.cpp $(ARINC)time_frame.h $(ARINC)config_kernel.h
 	gcc $(ARINC)kernel_arinc.cpp
 
 clean:
-	find -name "*.o" -type f -delete
-	find -name "*.gch" -type f -delete
+	find . -name "*.o" -type f -delete
+	find . -name "*.gch" -type f -delete
 
 success:
 	echo "\n[ Make successful! ]\n"
+
+reset:
+	find . -name "main_Com_ST" -type f -delete
+	find . -name "main_Ground" -type f -delete
+	find . -name "main_Control" -type f -delete
+	find . -name "main_run" -type f -delete
+	find . -name "a.out" -type f -delete
+	find . -name "listpid" -type f -delete
+	find . -name "LogError.txt" -type f -delete
 
