@@ -1,17 +1,6 @@
-#include <stdlib.h>
-#include <sstream>
-#include <cstdlib>
-#include <cstring>
-#include <string>
-#include <time.h>
-#include <iostream>
-#include <unistd.h>
-
-#include "genericInstruction.h"
 #include "planManager.h"
-#include "plan.h"
-using namespace std;
 
+using namespace std;
 
 PlanManager::PlanManager()
 {

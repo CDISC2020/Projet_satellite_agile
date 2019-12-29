@@ -8,9 +8,10 @@
 
 using namespace std;
 
-#include "ARINC_Com.h"
+#include "../ARINC/ARINC_Com.h"
 #include "cameraController.h"	
 #include "attitudeController.h"
+#include "../communication/statusManager.h"
 
 int  main (int argc,char* argv[]) 
 {

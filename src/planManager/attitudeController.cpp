@@ -2,10 +2,6 @@
 
 using namespace std;
 
-#include <stdlib.h> 
-#include <stdio.h>
-
-
 AttitudeController::AttitudeController() {}
 
 bool AttitudeController::attitudeChange(int roll, int pitch, int yaw) 

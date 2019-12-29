@@ -5,6 +5,11 @@
 CC = g++ -Wall -std=c++11 -lpthread -pthread
 MAKE = make
 
+ARINC = src/ARINC/
+# Workpackage directories
+WP_PLAN = src/planManager/
+WP_COM = src/communication/
+WP_SAF = src/safety/
 
 # exemples sur les sockets :  quels sockets???
 all:
@@ -12,67 +17,80 @@ all:
 	$(MAKE) genericInstruction
 	$(MAKE) plan
 	$(MAKE) planManager
+	$(MAKE) comGroundManager
 	$(MAKE) statusManager
+	$(MAKE) ground
 	$(MAKE) attitudeController
 	$(MAKE) cameraController
+	$(MAKE) control
 	$(MAKE) gpio
 	$(MAKE) watchdog
 	$(MAKE) main_PM 
 	$(MAKE) main_run
-	$(MAKE) comGroundManager
-	$(MAKE) Ground
-	$(MAKE) Control_run
+	$(MAKE) main_com
+	$(MAKE) main_Ground
+	$(MAKE) main_control
 	$(MAKE) kernel
 	$(MAKE) clean
 	$(MAKE) success
 
-ARINC_Com:  ARINC_Com.cpp ARINC_Com.h
-	$(CC) -c ARINC_Com.cpp ARINC_Com.h
+ARINC_Com:  $(ARINC)ARINC_Com.cpp $(ARINC)ARINC_Com.h
+	$(CC) -c $(ARINC)ARINC_Com.cpp
 
-genericInstruction: genericInstruction.cpp genericInstruction.h
-	$(CC) -c genericInstruction.cpp genericInstruction.h
+genericInstruction: $(WP_PLAN)genericInstruction.cpp $(WP_PLAN)genericInstruction.h
+	$(CC) -c $(WP_PLAN)genericInstruction.cpp
 
-plan: plan.cpp plan.h
-	$(CC) -c plan.cpp plan.h
+plan: $(WP_PLAN)plan.cpp $(WP_PLAN)plan.h
+	$(CC) -c $(WP_PLAN)plan.cpp
 
-planManager: planManager.cpp planManager.h
-	$(CC) -c planManager.cpp planManager.h
+planManager: $(WP_PLAN)planManager.cpp $(WP_PLAN)planManager.h
+	$(CC) -c $(WP_PLAN)planManager.cpp 
 
-statusManager:  statusManager.cpp statusManager.h
-	$(CC) -c statusManager.cpp statusManager.h
+comGroundManager: $(WP_COM)comGroundManager.cpp
+	$(CC) -c $(WP_COM)comGroundManager.cpp
 
-attitudeController:  attitudeController.cpp attitudeController.h
-	$(CC) -c attitudeController.cpp attitudeController.h
+statusManager:  $(WP_COM)statusManager.cpp $(WP_COM)statusManager.h
+	$(CC) -c $(WP_COM)statusManager.cpp
 
-cameraController:  cameraController.cpp cameraController.h
-	$(CC) -c cameraController.cpp cameraController.h
+ground: $(WP_COM)Ground.cpp
+	$(CC) -c $(WP_COM)Ground.cpp
+
+attitudeController:  $(WP_PLAN)attitudeController.cpp $(WP_PLAN)attitudeController.h
+	$(CC) -c $(WP_PLAN)attitudeController.cpp
+
+cameraController:  $(WP_PLAN)cameraController.cpp $(WP_PLAN)cameraController.h
+	$(CC) -c $(WP_PLAN)cameraController.cpp
+
+control: $(WP_PLAN)control.cpp
+	$(CC) -c $(WP_PLAN)control.cpp
 	
-gpio : GPIO.cpp GPIO.h
-	$(CC) -c GPIO.cpp GPIO.h
+gpio : src/GPIO.cpp src/GPIO.h
+	$(CC) -c src/GPIO.cpp
 	
-watchdog : watchdog.cpp watchdog.h
-	$(CC) -c watchdog.cpp watchdog.h
+watchdog : $(WP_SAF)watchdog.cpp $(WP_SAF)watchdog.h
+	$(CC) -c $(WP_SAF)watchdog.cpp
 
-main_PM: main_PM.cpp
-	$(CC) -c main_PM.cpp
+main_PM: $(WP_PLAN)main_PM.cpp
+	$(CC) -c $(WP_PLAN)main_PM.cpp
 
-main_run: *.o
-	$(CC) *.o -o main_run
+main_run: ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o watchdog.o main_PM.o
+	$(CC) ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o watchdog.o main_PM.o -o main_run
 
-comGroundManager: ARINC_Com.o statusManager.o comGroundManager.o
+main_com: ARINC_Com.o statusManager.o comGroundManager.o
 	$(CC) ARINC_Com.o statusManager.o comGroundManager.o -o main_Com_ST
 
-Ground: ARINC_Com.o Ground.o
+main_Ground: ARINC_Com.o Ground.o
 	$(CC) ARINC_Com.o Ground.o -o main_Ground
 
-Control_run : ARINC_Com.o attitudeController.o cameraController.o control.o
+main_control: ARINC_Com.o attitudeController.o cameraController.o control.o
 	$(CC) ARINC_Com.o attitudeController.o cameraController.o control.o -o main_Control
 
-kernel: kernel_arinc.cpp
-	gcc kernel_arinc.cpp
+kernel: $(ARINC)kernel_arinc.cpp $(ARINC)time_frame.h $(ARINC)config_kernel.h
+	gcc $(ARINC)kernel_arinc.cpp
 
 clean:
-	rm *.o *.gch
+	find -name "*.o" -type f -delete
+	find -name "*.gch" -type f -delete
 
 success:
 	echo "\n[ Make successful! ]\n"

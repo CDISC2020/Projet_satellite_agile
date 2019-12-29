@@ -11,6 +11,13 @@
 
 using namespace std;
 
+typedef struct Camera Camera;
+struct Camera {
+	int code;
+	char photoName[64];
+	int exposure;
+};
+
 class CameraController 
 {
 public:

@@ -11,8 +11,9 @@
 #include <stdio.h>
 
 #include "planManager.h"
-#include "watchdog.h"
-#include "GPIO.h"
+#include "../safety/watchdog.h"
+#include "../communication/statusManager.h"
+#include "../GPIO.h"
 #define LOW 0
 
 using namespace std;
@@ -25,46 +26,6 @@ int responseController = 0;
 QueuingPort* channelController; 	// Client_PM vers controller
 QueuingPort* channelSM; 		// Client_PM vers com ground / SM
 QueuingPort* channelReceptionPM; 	// Server_PM	
-
-
-/*
-typedef struct Attitude Attitude;
-struct Attitude {
-	int code;
-	int yaw;
-	int pitch;
-	int roll;
-};
-
-
-typedef struct Camera Camera;
-struct Camera {
-	int code;
-	char photoName[32];
-	int exposure;
-};
-
-typedef struct Status Status;
-struct Status {
-	int code;
-	int errorID;
-	char description[128];
-	
-};
-
-typedef struct statusControl statusControl;
-struct statusControl {
-	int code;
-	bool returnControl;
-};
-
-typedef struct PlanFilePath PlanFilePath;
-struct PlanFilePath {
-	int code;
-	const char filePath[64];
-};
-
-*/
 
 void * Server_PM(void *args)
 {

@@ -1,6 +1,8 @@
 #ifndef AES_H
 #define AES_H
 
+#include <stdio.h>
+
 #define Nb 4
 #define Nr 10
 #define Nk 4

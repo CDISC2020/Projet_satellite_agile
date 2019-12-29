@@ -8,8 +8,15 @@
 #include <stdio.h>
 #include <sstream>
 
-
 using namespace std;
+
+typedef struct Attitude Attitude;
+struct Attitude {
+	int code;
+	int yaw;
+	int pitch;
+	int roll;
+};
 
 class AttitudeController 
 {

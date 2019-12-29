@@ -1,7 +1,5 @@
 #include "AES.h"
 
-#include<stdio.h>
-
 AES::AES(unsigned char* k) {
     for(int i=0;i<Nk*4;i++)
 	{

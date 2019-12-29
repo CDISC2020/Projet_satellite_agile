@@ -6,7 +6,8 @@
 
 using namespace std;
 
-#include "ARINC_Com.h"
+#include "../ARINC/ARINC_Com.h"
+#include "../planManager/planManager.h"
 
 int main (int argc,char* argv[]) 
 {

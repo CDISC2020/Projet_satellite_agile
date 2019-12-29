@@ -34,7 +34,6 @@ bool Plan::stockInstruction(GenericInstruction * newInstruction)
 	}
 }
 
-
 void Plan::loadPlan(const char* filepath)
 {
 	ifstream  readFile;

@@ -1,5 +1,4 @@
 #include "watchdog.h"
-#include "GPIO.h"
 
 using namespace std;
 
@@ -8,13 +7,6 @@ using namespace std;
  
 #define LOW  0
 #define HIGH 1
-
-#include <stdlib.h> 
-#include <stdio.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-
 
 Watchdog::Watchdog() 
 {

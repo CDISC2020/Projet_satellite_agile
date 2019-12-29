@@ -2,10 +2,6 @@
 
 using namespace std;
 
-#include <stdlib.h> 
-#include <stdio.h>
-
-
 CameraController::CameraController() {}
 
 bool CameraController::photoShoot(string fileName, int exposure) 
