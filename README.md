@@ -1,6 +1,11 @@
-# codeplan
+[Projet satellite agile]
 
-Pour lancer le truc 
+## Compilation ##
+-Pour compiler :
+	make ou make all
+-Pour enlever les execuables crées par la compiltion et les fichiers temporaires :
+	make reset
 
-g++ main_test.cpp attitudeController.cpp cameraController.cpp planManager.cpp plan.cpp genericInstruction.cpp statusManager.cpp -o exec
-
+## Run ##
+-Executer le script launch_ARINC.sh :
+	./launch_ARINC.sh
