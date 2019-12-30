@@ -35,31 +35,32 @@ all:
 	$(MAKE) success
 
 ARINC_Com:  $(ARINC)ARINC_Com.cpp $(ARINC)ARINC_Com.h
-	$(CC) -c $(ARINC)ARINC_Com.cpp
+	$(CC) -c $(ARINC)ARINC_Com.cpp $(ARINC)ARINC_Com.h
 
 genericInstruction: $(WP_PLAN)genericInstruction.cpp $(WP_PLAN)genericInstruction.h
-	$(CC) -c $(WP_PLAN)genericInstruction.cpp
+	$(CC) -c $(WP_PLAN)genericInstruction.cpp $(WP_PLAN)genericInstruction.h
 
 plan: $(WP_PLAN)plan.cpp $(WP_PLAN)plan.h
-	$(CC) -c $(WP_PLAN)plan.cpp
+	$(CC) -c $(WP_PLAN)plan.cpp $(WP_PLAN)plan.h
 
 planManager: $(WP_PLAN)planManager.cpp $(WP_PLAN)planManager.h
-	$(CC) -c $(WP_PLAN)planManager.cpp 
+	$(CC) -c $(WP_PLAN)planManager.cpp $(WP_PLAN)planManager.h
 
 comGroundManager: $(WP_COM)comGroundManager.cpp
 	$(CC) -c $(WP_COM)comGroundManager.cpp
 
 statusManager:  $(WP_COM)statusManager.cpp $(WP_COM)statusManager.h
+	$(CC) -c $(WP_COM)statusManager.cpp $(WP_COM)statusManager.h
 	$(CC) -c $(WP_COM)statusManager.cpp
 
 ground: $(WP_COM)Ground.cpp
 	$(CC) -c $(WP_COM)Ground.cpp
 
 attitudeController:  $(WP_PLAN)attitudeController.cpp $(WP_PLAN)attitudeController.h
-	$(CC) -c $(WP_PLAN)attitudeController.cpp
+	$(CC) -c $(WP_PLAN)attitudeController.cpp $(WP_PLAN)attitudeController.h
 
 cameraController:  $(WP_PLAN)cameraController.cpp $(WP_PLAN)cameraController.h
-	$(CC) -c $(WP_PLAN)cameraController.cpp
+	$(CC) -c $(WP_PLAN)cameraController.cpp $(WP_PLAN)cameraController.h
 
 control: $(WP_PLAN)control.cpp
 	$(CC) -c $(WP_PLAN)control.cpp
@@ -68,7 +69,7 @@ gpio : src/GPIO.cpp src/GPIO.h
 	$(CC) -c src/GPIO.cpp
 	
 watchdog : $(WP_SAF)watchdog.cpp $(WP_SAF)watchdog.h
-	$(CC) -c $(WP_SAF)watchdog.cpp
+	$(CC) -c $(WP_SAF)watchdog.cpp $(WP_SAF)watchdog.h
 
 main_PM: $(WP_PLAN)main_PM.cpp
 	$(CC) -c $(WP_PLAN)main_PM.cpp
