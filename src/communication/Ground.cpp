@@ -9,10 +9,10 @@ using namespace std;
 #include "../ARINC/ARINC_Com.h"
 #include "../planManager/planManager.h"
 
-int main (int argc,char* argv[]) 
+int main (int argc,char* argv[])
 {
 
-	if (argc!=2) 
+	if (argc!=2)
 	{
 		printf("T'as oublie l'argument banane ! Le hostname... \n");
 		exit (-1);
@@ -33,27 +33,28 @@ int main (int argc,char* argv[])
 
 	channelOut.Display();
 
-	cout << "Host name " << argv[1] << endl; 
+	cout << "Host name " << argv[1] << endl;
 	cout << "Welcome to the Ground Station, what do you want to do ?" << endl;
 
-	while (1) 
+	while (1)
 	{
 		cout << "('p' to send a plan ; 'r' to receive the photos)" << endl;
 		char c;
 		scanf(" %c", &c);
-		
+
 		if (c == 'p')	// Envoi d'un plan
 		{
 			cout << "What is the plan name ? (end it by '.txt'" << endl;
 			p.code = 5;
 			scanf("%11s[^\n]", p.name);
-			cout << "Sending Plan..." << endl;
-			//string aux(p.name);
-			sprintf(cmde, "sh uploadGtoS.sh %s", p.name);
+			cout << "Sending Plan..." << endl;	
+			string filepath(p.name);
+			filepath="src/planManager/plans/"+filepath;
+			sprintf(cmde, "sh src/communication/uploadGtoS.sh %s", p.name);
 			system(cmde);
 			sleep(2);
 			channelOut.SendQueuingMsg((char*)&p, sizeof(PlanName));
-			
+
 			cout << "Plan sent !" << endl;
 		}
 		else // Demande des photos
