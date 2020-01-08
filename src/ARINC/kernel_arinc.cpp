@@ -12,7 +12,7 @@
 #include "config_kernel.h"
 #include "time_frame.h"
 
-#define TIME_FRAME false // true=use time frames  -  false=use simple periods
+#define TIME_FRAME true // true=use time frames  -  false=use simple periods
 // edit config_kernel.h for simple periods use
 // edit time_frame.h for time frames use
 
@@ -49,10 +49,9 @@ Tperiod[1]=TIME_SM;
 Tperiod[2]=TIME_CT;
 
 // Initialisation of P_in_frame and Tframe
-P_in_frame[0]=0; 	Tframe[0]=SLOT_P11;
-P_in_frame[1]=1; 	Tframe[1]=SLOT_P21;
-P_in_frame[2]=2; 	Tframe[2]=SLOT_P31;
-P_in_frame[3]=1; 	Tframe[3]=SLOT_P22;
+P_in_frame[0]=0; 	Tframe[0]=TIME_PM;
+P_in_frame[1]=1; 	Tframe[1]=TIME_SM;
+P_in_frame[2]=2; 	Tframe[2]=TIME_CT;
 
 // Main body of the program
 
