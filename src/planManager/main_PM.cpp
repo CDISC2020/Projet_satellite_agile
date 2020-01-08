@@ -228,7 +228,7 @@ int  main (int argc,char* argv[])
 	if (pthread_create(thread, thread_attributes, Client_PM,(void *) NULL) != 0) 
 		perror ("Thread_Server-> Failure detector thread pb!");
 
-	while(1) {	}
+	while(1) {usleep(20);}
 
 	return 0;
 }
