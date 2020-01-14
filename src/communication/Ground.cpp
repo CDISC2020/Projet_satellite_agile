@@ -21,7 +21,7 @@ int main (int argc,char* argv[])
 	// Suite si hostname en argument
 
 	char s[100];
-	char cmde[] = {"                                "};
+	char cmde[] = {"                                                    "};
 	PlanName p;
 
 	if (gethostname(s, 100) != 0) {
