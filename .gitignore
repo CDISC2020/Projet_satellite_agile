@@ -1,7 +1,7 @@
 #on ne versionne pas les executables generes par le code du repository
+main_PM
 main_Com_ST
-main_Control
-main_run
+main_FDIR
 main_Ground
 
 # autres

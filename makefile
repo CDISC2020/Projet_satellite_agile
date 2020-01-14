@@ -13,6 +13,7 @@ WP_SAF = src/safety/
 
 # exemples sur les sockets :  quels sockets???
 all:
+	$(MAKE) clean
 	$(MAKE) ARINC_Com
 	$(MAKE) genericInstruction
 	$(MAKE) plan
@@ -22,14 +23,14 @@ all:
 	$(MAKE) ground
 	$(MAKE) attitudeController
 	$(MAKE) cameraController
-	$(MAKE) control
+	$(MAKE) controller
 	$(MAKE) gpio
 	$(MAKE) watchdog
-	$(MAKE) main_PM 
-	$(MAKE) main_run
+	$(MAKE) fdir
+	$(MAKE) main_PM
 	$(MAKE) main_com
+	$(MAKE) main_FDIR
 	$(MAKE) main_Ground
-	$(MAKE) main_control
 	$(MAKE) kernel
 	$(MAKE) clean
 	$(MAKE) success
@@ -43,8 +44,8 @@ genericInstruction: $(WP_PLAN)genericInstruction.cpp $(WP_PLAN)genericInstructio
 plan: $(WP_PLAN)plan.cpp $(WP_PLAN)plan.h
 	$(CC) -c $(WP_PLAN)plan.cpp $(WP_PLAN)plan.h
 
-planManager: $(WP_PLAN)planManager.cpp $(WP_PLAN)planManager.h
-	$(CC) -c $(WP_PLAN)planManager.cpp $(WP_PLAN)planManager.h
+planManager: $(WP_PLAN)planManager.cpp $(WP_PLAN)planManager.h $(WP_PLAN)main_PM.cpp
+	$(CC) -c $(WP_PLAN)planManager.cpp $(WP_PLAN)planManager.h $(WP_PLAN)main_PM.cpp
 
 comGroundManager: $(WP_COM)comGroundManager.cpp
 	$(CC) -c $(WP_COM)comGroundManager.cpp
@@ -62,8 +63,8 @@ attitudeController:  $(WP_PLAN)attitudeController.cpp $(WP_PLAN)attitudeControll
 cameraController:  $(WP_PLAN)cameraController.cpp $(WP_PLAN)cameraController.h
 	$(CC) -c $(WP_PLAN)cameraController.cpp $(WP_PLAN)cameraController.h
 
-control: $(WP_PLAN)control.cpp
-	$(CC) -c $(WP_PLAN)control.cpp
+controller: $(WP_PLAN)Controller.cpp $(WP_PLAN)Controller.h
+	$(CC) -c $(WP_PLAN)Controller.cpp $(WP_PLAN)Controller.h
 	
 gpio : src/GPIO.cpp src/GPIO.h
 	$(CC) -c src/GPIO.cpp
@@ -71,20 +72,20 @@ gpio : src/GPIO.cpp src/GPIO.h
 watchdog : $(WP_SAF)watchdog.cpp $(WP_SAF)watchdog.h
 	$(CC) -c $(WP_SAF)watchdog.cpp $(WP_SAF)watchdog.h
 
-main_PM: $(WP_PLAN)main_PM.cpp
-	$(CC) -c $(WP_PLAN)main_PM.cpp
+fdir: $(WP_SAF)main_FDIR.cpp
+	$(CC) -c $(WP_SAF)main_FDIR.cpp
 
-main_run: ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o watchdog.o main_PM.o
-	$(CC) ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o watchdog.o main_PM.o -o main_run
+main_PM: ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o watchdog.o main_PM.o Controller.o
+	$(CC) ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o watchdog.o main_PM.o Controller.o -o main_PM
 
 main_com: ARINC_Com.o statusManager.o comGroundManager.o
 	$(CC) ARINC_Com.o statusManager.o comGroundManager.o -o main_Com_ST
 
+main_FDIR: main_FDIR.o
+	$(CC) main_FDIR.o -o main_FDIR
+
 main_Ground: ARINC_Com.o Ground.o
 	$(CC) ARINC_Com.o Ground.o -o main_Ground
-
-main_control: ARINC_Com.o attitudeController.o cameraController.o control.o
-	$(CC) ARINC_Com.o attitudeController.o cameraController.o control.o -o main_Control
 
 kernel: $(ARINC)kernel_arinc.cpp $(ARINC)time_frame.h $(ARINC)config_kernel.h
 	gcc $(ARINC)kernel_arinc.cpp
@@ -97,10 +98,10 @@ success:
 	echo "\n[ Make successful! ]\n"
 
 reset:
+	find . -name "main_PM" -type f -delete
 	find . -name "main_Com_ST" -type f -delete
+	find . -name "main_FDIR" -type f -delete
 	find . -name "main_Ground" -type f -delete
-	find . -name "main_Control" -type f -delete
-	find . -name "main_run" -type f -delete
 	find . -name "a.out" -type f -delete
 	find . -name "listpid" -type f -delete
 	find . -name "LogError.txt" -type f -delete

@@ -45,8 +45,8 @@ printf("*** TRACE : %d %s %s %s %s %s %s \n", argc, argv[0], argv[1],argv[2],arg
 
 // Initialisation of the periods
 Tperiod[0]=TIME_PM;
-Tperiod[1]=TIME_SM;
-Tperiod[2]=TIME_CT;
+Tperiod[1]=TIME_COM;
+Tperiod[2]=TIME_FDIR;
 
 // Initialisation of P_in_frame and Tframe
 P_in_frame[0]=0; 	Tframe[0]=TIME_PM;

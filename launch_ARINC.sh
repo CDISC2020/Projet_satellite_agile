@@ -1,7 +1,7 @@
 >listpid
-xterm -e ./main_Control localhost &
-xterm -e ./main_run localhost &
+xterm -e ./main_PM localhost &
 xterm -e ./main_Com_ST localhost &
+xterm -e ./main_FDIR localhost &
 echo '***** WAITING FOR INSTALL TO COMPLETE  *****'
 for i in `seq 20`
 do

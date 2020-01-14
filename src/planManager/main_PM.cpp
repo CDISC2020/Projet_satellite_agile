@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include "planManager.h"
+#include "Controller.h"
 #include "../safety/watchdog.h"
 #include "../communication/statusManager.h"
 #include "../GPIO.h"
@@ -21,8 +22,9 @@ using namespace std;
 
 int tid_FD, tid_FP;
 pthread_t *thread1, *thread2;
-PlanManager PM;
 int responseController = 0;
+Controller control;
+PlanManager PM;
 QueuingPort* channelController; 	// Client_PM vers controller
 QueuingPort* channelSM; 		// Client_PM vers com ground / SM
 QueuingPort* channelReceptionPM; 	// Server_PM	
@@ -58,11 +60,13 @@ void * Server_PM(void *args)
 
 		if(f->code == 3) 
 		{
+			// ARRIVE de COM
 			cout<<"Msg("<<x++<<"):  path ="<<f->filepath<<endl;
 			PM.generatePlan(f->filepath);
 		} 
 		else if (f->code == 2) 
 		{
+			// ARRIVE de CONTROLLER
 			r = (statusControl*)buffer;
 			cout<<"Msg("<<x++<<"):  code retour ="<<r->returnControl<<")"<<endl;
 			if (r->returnControl == false) 
@@ -135,7 +139,7 @@ void proceed()
 // Fonctionnement normal
 	sleep(1);
 	cout << "Fonctionnement" << endl;
-	PM.executePlan(channelController, &responseController,channelSM );
+	PM.executePlan(&control, &responseController,channelSM );
 }
 
 sig_t bye() 

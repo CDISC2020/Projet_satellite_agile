@@ -16,6 +16,7 @@
 #include "genericInstruction.h"
 #include "attitudeController.h"
 #include "cameraController.h"
+#include "Controller.h"
 #include "../ARINC/ARINC_Com.h"
 #include "../communication/statusManager.h"
 
@@ -52,7 +53,7 @@ protected:
 
 public:
 	PlanManager();
-	void executePlan(QueuingPort* , int *,QueuingPort*);
+	void executePlan(Controller* , int *,QueuingPort*);
 	void generatePlan(const char*);
 	void printPlan(int indexPlan);
 	void pushBan(int index);

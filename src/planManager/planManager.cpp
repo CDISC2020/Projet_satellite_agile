@@ -9,7 +9,7 @@ PlanManager::PlanManager()
 	this->indexPlan = 0;
 }
 
-void PlanManager::executePlan(QueuingPort* ChannelEmission, int* responseController,QueuingPort* ChannelErreur)
+void PlanManager::executePlan(Controller* control, int* responseController,QueuingPort* ChannelErreur)
 {
 
 	if (nPlan > 0) 
@@ -46,34 +46,10 @@ void PlanManager::executePlan(QueuingPort* ChannelEmission, int* responseControl
 			*/
 				cout<<"C'est l'heure ";
 				bool start_timeout = false;
-	/*---------------------------------------------------------*/
-				// To find the type of order: photo or attitude
-				if (currentInst->getType() == 'p') 
+				/*--------------Call Controller to execute instruction-------------*/
+				if(currentInst->getType() == 'p' || currentInst->getType() == 'a')
 				{
-					Camera C;
-					C.code = 1; 
-					C.exposure = ((PhotoInstruction*)currentInst)->getExposure();
-					string aux = ((PhotoInstruction*)currentInst)->getPhotoName(); 
-					strcpy(C.photoName,aux.c_str());
-
-					cout << endl << "New photo! Smile!" << endl;
-					ChannelEmission->SendQueuingMsg((char*)&C, sizeof(Camera));
-					//myCameraController->photoShoot(photoName, exposure);
-					
-					start_timeout = true;
-				} 
-				else if (currentInst->getType() == 'a') 
-				{
-					Attitude A;
-					A.code = 0;
-					A.yaw = ((AttitudeInstruction*)currentInst)->getYaw();
-					A.pitch = ((AttitudeInstruction*)currentInst)->getPitch();
-					A.roll = ((AttitudeInstruction*)currentInst)->getRoll();
-
-					cout << endl << "New attitude change!!" << endl;
-					ChannelEmission->SendQueuingMsg((char*)&A, sizeof(Attitude));
-					//myAttitudeController->attitudeChange(yaw, pitch, roll); // roll(not used)
-					
+					control->executeInstruction(currentInst, responseController, ChannelErreur, &P, ptInstruction);
 					start_timeout = true;
 				}
 				else 
@@ -85,7 +61,7 @@ void PlanManager::executePlan(QueuingPort* ChannelEmission, int* responseControl
 
 					ChannelErreur->SendQueuingMsg((char*)&S, sizeof(Status));
 				}
-	/*---------------------------------------------------------*/
+				/*---------------------------------------------------------*/
 
 				/*-------------Wait for Time Out of the controller response-----------*/
 				int time_out = 1000000; 

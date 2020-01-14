@@ -5,6 +5,6 @@
 // Used to compute the time frame and to perform verifications
 
 #define TIME_PM 5
-#define TIME_SM 10
-#define TIME_CT 20
+#define TIME_COM 10
+#define TIME_FDIR 20
 
