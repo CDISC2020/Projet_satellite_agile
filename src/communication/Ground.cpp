@@ -6,12 +6,11 @@
 
 using namespace std;
 
-#include "../ARINC/ARINC_Com.h"
+//#include "../ARINC/ARINC_Com.h"
 #include "../planManager/planManager.h"
 
 int main (int argc,char* argv[])
 {
-
 	if (argc!=2)
 	{
 		printf("T'as oublie l'argument banane ! Le hostname... \n");
@@ -21,7 +20,7 @@ int main (int argc,char* argv[])
 	// Suite si hostname en argument
 
 	char s[100];
-	char cmde[] = {"                                                    "};
+	char cmde[] = {"                                "};
 	PlanName p;
 
 	if (gethostname(s, 100) != 0) {
@@ -49,18 +48,22 @@ int main (int argc,char* argv[])
 			scanf("%11s[^\n]", p.name);
 			cout << "Sending Plan..." << endl;	
 			string filepath(p.name);
-			filepath="src/planManager/plans/"+filepath;
+			filepath=""+filepath;
 			sprintf(cmde, "sh src/communication/uploadGtoS.sh %s", p.name);
 			system(cmde);
 			sleep(2);
-			channelOut.SendQueuingMsg((char*)&p, sizeof(PlanName));
+			//channelOut.SendQueuingMsg((char*)&p, sizeof(PlanName));
 
 			cout << "Plan sent !" << endl;
 		}
-		else // Demande des photos
+		else if (c=='r')  // Demande des photos
 		{
 			p.code = 10;
-			channelOut.SendQueuingMsg((char*)&p, sizeof(PlanName));
+			//char file_demande = "demande_imgs.txt";
+			//channelOut.SendQueuingMsg((char*)&p, sizeof(PlanName));
+			sprintf(cmde, "sh src/communication/uploadGtoSr.sh %s", "demande_imgs.txt");
+			printf("demande image envoyee");
+			system(cmde);
 			cout << "Receiving the images..." << endl;
 			sleep(2);
 		}

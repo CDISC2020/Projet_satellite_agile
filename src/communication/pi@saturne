@@ -4,7 +4,7 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <stdio.h>
-//#include <conio.h>
+#include<conio.h>
 #include <unistd.h>
 #include <fstream>
 #include <linux/inotify.h>
@@ -32,7 +32,7 @@ int  main (int argc,char* argv[])
 	string imageList[128];
 	int ptImageReceived = 0;
 	int ptImageSent = 0;
-	bool mode = true; // Mode slave;
+	bool mode = false; // Mode slave;
 	char s[100];
 
 	if (gethostname(s, 100) != 0) 
@@ -42,27 +42,23 @@ int  main (int argc,char* argv[])
 	}
 
 	pfp.code = 3;
-	//reception telecommande notif
 
 	cout << "Host name " << s << endl; 
 	
-	/**QueuingPort channelOutPM(0, 18001, argv[1]); 	// Client
+	QueuingPort channelOutPM(0, 18001, argv[1]); 	// Client
 	QueuingPort channelIn(1, 18003, s); 		// Server	
 
 	channelIn.Display();
-	channelOutPM.Display();**/
+	channelOutPM.Display();
 
 	char buffer[1024];
 	int i; for(i=0; i>1024; i++) buffer[i] = '\0';
 	char cmde[] = {"                                "};
-	//char file_demande = "demande_imgs.txt";
+	char file_demande = "demande_imgs.txt";
 	
 	while(1) 
 	{
-		ifstream ifile;
-   		ifile.open("demande_imgs.txt");
-		//channelIn.RecvQueuingMsg(buffer);*
-/**
+		channelIn.RecvQueuingMsg(buffer);
 		status = (Status*)buffer;
 
 		if (status->code == 3)		// utilisation d'un type p
@@ -79,12 +75,9 @@ int  main (int argc,char* argv[])
 		}
 		else if(status->code == 5) 
 		{
-			cout << "plant recu!" << endl;
 			p = (PlanName*)buffer;
-			string name(p->name);
-			string path="src/planManager/plans/"+name;
-			for(unsigned int i=0; i<path.length(); i++)
-				pfp.filepath[i] = path[i];
+			for(int i=0; i<11; i++)
+				pfp.filepath[i] = p->name[i];
 			cout<<p->name;
 			channelOutPM.SendQueuingMsg((char*)&pfp, sizeof(PlanFilePath));
 		}
@@ -92,28 +85,22 @@ int  main (int argc,char* argv[])
 		{
 			m = (ModeStruct*)buffer;
 			mode = m->rpiMode;
-		}**/
-		if( ( ifile)  && (mode == true))
-		{	
-			//printf("inside boucle envoi photos");
-			string aux("image_test.jpg");	
-			imageList[0] = aux;	
-			sprintf(cmde, "sh src/communication/uploadStoG.sh LogError.txt");
+		}
+		else if( ( access( file_demande.c_str(), F_OK ) != -1 )  && (mode == true))
+		{			
+			sprintf(cmde, "sh uploadStoG.sh LogError.txt");
 			system(cmde);
-			ptImageReceived=1;
 			while(ptImageSent != ptImageReceived)
 			{
-				printf("boucle envoi photos");						
-				sprintf(cmde, "sh src/communication/uploadStoG.sh %s", imageList[ptImageSent].c_str());
+				sprintf(cmde, "sh uploadStoG.sh %s", imageList[ptImageSent].c_str());
 				system(cmde);
 				sleep(1);
 				sprintf(cmde, "rm %s", imageList[ptImageSent].c_str());
 				system(cmde);
 				ptImageSent = (ptImageSent + 1)%128;
 			}// lancer bash qui envoie chaque photo du tableau.
-			remove("demande_imgs.txt");
+			remove(file_demande);
 		}
-		//else{ printf("non");}
 	}
 
 	return 0;
