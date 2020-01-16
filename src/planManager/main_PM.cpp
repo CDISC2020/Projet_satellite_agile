@@ -38,7 +38,6 @@ void * Server_PM(void *args)
 
 	char s[100];
 	PlanFilePath* f;
-	statusControl* r;
 
 	if (gethostname(s, 100) != 0)
 	{

@@ -1,7 +1,7 @@
 #!/bin/sh
-.SUFFIXES : .c .o 
+.SUFFIXES : .c .o
 
-# CONSTANTES 
+# CONSTANTES
 CC = g++ -Wall -std=c++11 -lpthread -pthread
 MAKE = make
 
@@ -24,8 +24,6 @@ all:
 	$(MAKE) attitudeController
 	$(MAKE) cameraController
 	$(MAKE) controller
-	$(MAKE) PF1
-	$(MAKE) PF2
 	$(MAKE) gpio
 	$(MAKE) watchdog
 	$(MAKE) fdir
@@ -33,8 +31,6 @@ all:
 	$(MAKE) main_com
 	$(MAKE) main_FDIR
 	$(MAKE) main_Ground
-	$(MAKE) main_PF1
-	$(MAKE) main_PF2
 	$(MAKE) kernel
 	$(MAKE) clean
 	$(MAKE) success
@@ -69,16 +65,10 @@ cameraController:  $(WP_PLAN)cameraController.cpp $(WP_PLAN)cameraController.h
 
 controller: $(WP_PLAN)Controller.cpp $(WP_PLAN)Controller.h
 	$(CC) -c $(WP_PLAN)Controller.cpp $(WP_PLAN)Controller.h
-	
-PF1: $(WP_COM)main_PF1.cpp
-	$(CC) -c $(WP_COM)main_PF1.cpp
-
-PF2: $(WP_COM)main_PF2.cpp
-	$(CC) -c $(WP_COM)main_PF2.cpp
 
 gpio : src/GPIO.cpp src/GPIO.h
 	$(CC) -c src/GPIO.cpp
-	
+
 watchdog : $(WP_SAF)watchdog.cpp $(WP_SAF)watchdog.h
 	$(CC) -c $(WP_SAF)watchdog.cpp $(WP_SAF)watchdog.h
 
@@ -96,12 +86,6 @@ main_FDIR: main_FDIR.o
 
 main_Ground: ARINC_Com.o Ground.o
 	$(CC) ARINC_Com.o Ground.o -o main_Ground
-
-main_PF1: ARINC_Com.o statusManager.o planManager.o main_PF1.o
-	$(CC) ARINC_Com.o statusManager.o planManager.o main_PF1.o -o main_PF1
-
-main_PF2: ARINC_Com.o plan.o main_PF2.o
-	$(CC) ARINC_Com.o plan.o main_PF2.o -o main_PF2
 
 kernel: $(ARINC)kernel_arinc.cpp $(ARINC)time_frame.h $(ARINC)config_kernel.h
 	gcc $(ARINC)kernel_arinc.cpp
@@ -121,4 +105,3 @@ reset:
 	find . -name "a.out" -type f -delete
 	find . -name "listpid" -type f -delete
 	find . -name "LogError.txt" -type f -delete
-

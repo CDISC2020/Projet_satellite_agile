@@ -50,8 +50,8 @@ Tperiod[2]=TIME_FDIR;
 
 // Initialisation of P_in_frame and Tframe
 P_in_frame[0]=0; 	Tframe[0]=P11_PM;
-P_in_frame[1]=1; 	Tframe[1]=P21_SM;
-P_in_frame[2]=2; 	Tframe[2]=P31_CT;
+P_in_frame[1]=1; 	Tframe[1]=P21_COM;
+P_in_frame[2]=2; 	Tframe[2]=P31_FDIR;
 
 // Main body of the program
 
