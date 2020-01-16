@@ -16,7 +16,7 @@
 // edit config_kernel.h for simple periods use
 // edit time_frame.h for time frames use
 
-pid_t pid[N]; // table of pid, one per partition 
+pid_t pid[N]; // table of pid, one per partition
 
 int Tperiod[N]; // table of periods, i.e. time budget per partition
 
@@ -49,9 +49,9 @@ Tperiod[1]=TIME_COM;
 Tperiod[2]=TIME_FDIR;
 
 // Initialisation of P_in_frame and Tframe
-P_in_frame[0]=0; 	Tframe[0]=TIME_PM;
-P_in_frame[1]=1; 	Tframe[1]=TIME_SM;
-P_in_frame[2]=2; 	Tframe[2]=TIME_CT;
+P_in_frame[0]=0; 	Tframe[0]=P11_PM;
+P_in_frame[1]=1; 	Tframe[1]=P21_SM;
+P_in_frame[2]=2; 	Tframe[2]=P31_CT;
 
 // Main body of the program
 
@@ -116,9 +116,9 @@ while (1) {  // Scheduler infinite loop
 	kill (pid[P_in_frame[active_p]], SIGSTOP);
 
 	// set active_p to next (modulo N, number of partitions)
-	
+
 	active_p=(active_p + 1) % A;
-	
+
 } // end of while - end of main loop
 
 }; // end of program
