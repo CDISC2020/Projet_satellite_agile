@@ -22,7 +22,13 @@ void Controller::executeInstruction(GenericInstruction* instruction, int* respon
 		cout<<"name ="<<C.photoName<<"    exposure = "<<C.exposure<<endl;
                 sc.returnControl = myCameraController.photoShoot((string) C.photoName, C.exposure);
 		if(sc.returnControl)
-			*responseController=1;
+		{
+			//call traitement image
+			// if ok
+				*responseController=1;
+			//else
+			//	*responseController=-1;
+		}
 		else
 			*responseController=-1;
 	}
