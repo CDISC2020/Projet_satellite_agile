@@ -21,10 +21,9 @@ using namespace std;
 #include "../planManager/planManager.h"
 
 /*-------------------------------VARIABLES--------------------------------------*/
-
 int tid_sol, tid_interne;
 StatusManager sm;
-Status *status;	
+Status *status;
 PlanName *p;
 ModeStruct *m;
 PlanFilePath pfp;
@@ -36,21 +35,22 @@ bool mode = true; // Mode slave;
 char s[100];
 
 char buffer[1024];
-char cmde[] = {"                                "};
+char cmde[50];
 //mutex sut tableau list_images
 
 /*---------------------------------FONCTIONS AUX--------------------------------------*/
-
 int getdir (string dir, vector<string> &files)
 {
     DIR *dp;
     struct dirent *dirp;
-    if((dp  = opendir(dir.c_str())) == NULL) {
+    if((dp  = opendir(dir.c_str())) == NULL)
+    {
         cout << "Error(" << errno << ") opening " << dir << endl;
         return errno;
     }
 
-    while ((dirp = readdir(dp)) != NULL) {
+    while ((dirp = readdir(dp)) != NULL)
+    {
         files.push_back(string(dirp->d_name));
     }
     closedir(dp);
@@ -58,18 +58,18 @@ int getdir (string dir, vector<string> &files)
 }
 
 /*---------------------------------COMMUNICATION AU SOL--------------------------------------*/
-
-void* Communic_Sol(void *args){
-
-	while(1){
-		ifstream ifile;
-   		ifile.open("demande_imgs.txt");
-		if((ifile)){
-			cout << "File find\n";
-			if(mode == true)
-
-			{	
-				cout << "mode true \n";
+void* Communic_Sol(void *args)
+{
+	while(1)
+	{
+		if(mode == true)
+		{
+			ifstream ifile;
+	   		ifile.open("demande_imgs.txt");
+			if((ifile))
+			{
+				cout << "File find" << endl;
+				cout << "mode true" << endl;
 				string aux = "image_test.jpg";
 				imageList[0] = aux;
 
@@ -78,13 +78,11 @@ void* Communic_Sol(void *args){
 
 				ptImageReceived=1;
 
-				cout << "pt sent " << ptImageSent << "\n";
+				cout << "pt sent " << ptImageSent << endl;
 
 
 				while(ptImageSent != ptImageReceived)
-
 				{
-
 					//cout << "boucle \n";
 					// envoyer les images existentes
 					sprintf(cmde, "sh src/communication/uploadStoG.sh %s", imageList[ptImageSent].c_str());
@@ -92,14 +90,13 @@ void* Communic_Sol(void *args){
 					system(cmde);
 
 					sleep(1);
-					cout << "Img envoyée \n";
-
+					cout << "Img envoyée " << endl;
 
 					//enlever du satellite l'image envoyée au sol
 					sprintf(cmde, "rm %s", imageList[ptImageSent].c_str());
 
 					system(cmde);
-					cout << "Images enlevées \n";
+					cout << "Images enlevées" << endl;
 
 					ptImageSent = (ptImageSent + 1)%128;
 
@@ -107,28 +104,28 @@ void* Communic_Sol(void *args){
 				remove("demande_imgs.txt");
 				cout << "Demande enlevée\n";
 			}
+			else
+				cout << "Can't open file" << endl;
 		}
 
-		else if (mode == false) { printf("non mode");}
-
-		else {//printf("non file");
-		}
+		else 
+			cout << "In follower mode" << endl;
 	}
 }
 
-void* Communic_Interne(void* argv){
-
+/*----------------------------COMMUNICATION INTER-PARTITIONS---------------------------------*/
+void* Communic_Interne(void* argv)
+{
 	char* argv_char = static_cast<char*>(argv);
-	
-	QueuingPort channelOutPM(0, 18001, argv_char); 	// Client
+
+	QueuingPort channelOutPM(0, 18001, argv_char); 	// Client PM
 	QueuingPort channelIn(1, 18003, s); 		// Server
 
 	channelIn.Display();
 	channelOutPM.Display();
 
-	while(1) 
+	while(1)
 	{
-		
 		channelIn.RecvQueuingMsg(buffer);
 
 		status = (Status*)buffer;
@@ -146,26 +143,25 @@ void* Communic_Interne(void* argv){
 		// Plan manager --> Comunication Manager
 		// Error identifier and description
 
-		else if(status->code == 4) 
+		else if(status->code == 4)
 		{
 			string str(status->description);
 			sm.newNotification(status->errorID, str);
 		}
 
 		// Recuperer le nom du plan envoyé par le sol
-
-		else if(status->code == 5) 
+		else if(status->code == 5)
 		{
-			string dir = string("./TestSatelliteSaturne");
+			string dir = string(".");
     			vector<string> files = vector<string>();
 
     			getdir(dir,files);
 
-    			files.erase(files.begin());
-    			files.erase(files.end());
-			
+    			files.erase(files.begin()); // ??!
+    			files.erase(files.end());   // ??!
+
 		    	for (unsigned int i = 0;i < files.size();i++) {
-				char c=files[i][0];				
+				char c=files[i][0];
 				pfp.filepath[i] = c;
 		    	}
 			cout << pfp.filepath << "buffer pfp";
@@ -179,12 +175,26 @@ void* Communic_Interne(void* argv){
 			m = (ModeStruct*)buffer;
 			mode = m->rpiMode;
 		}
-		
+
+		else if((status->code == 10) && (mode == true))
+		{
+			sprintf(cmde, "sh uploadStoG.sh LogError.txt");
+			system(cmde);
+			while(ptImageSent != ptImageReceived)
+			{
+				sprintf(cmde, "sh uploadStoG.sh %s", imageList[ptImageSent].c_str());
+				system(cmde);
+				sleep(1);
+				sprintf(cmde, "rm %s", imageList[ptImageSent].c_str());
+				system(cmde);
+				ptImageSent = (ptImageSent + 1)%128;
+			}// lancer bash qui envoie chaque photo du tableau.
+		}
+
 	}
 }
 
 /*---------------------------------BYYYE--------------------------------------*/
-
 sig_t bye()
 {
   printf("S-> Salut !\n");
@@ -192,16 +202,15 @@ sig_t bye()
 }
 
 /*---------------------------------MAIN--------------------------------------*/
-
-int main (int argc, char* argv[]) 
+int main (int argc, char* argv[])
 {
-	if (argc!=2) 
+	if (argc!=2)
 	{
 		printf("T'as oublie l'argument pinpin ! Le hostname... \n");
 		exit (-1);
 	}
 
-	if (gethostname(s, 100) != 0) 
+	if (gethostname(s, 100) != 0)
 	{
 	    perror("S-> gethostname");
 	    exit(1);
@@ -210,17 +219,19 @@ int main (int argc, char* argv[])
 	void *argv_void = static_cast<void*>(argv[1]);
 
 	int i; for(i=0; i>1024; i++) buffer[i] = '\0';
+	
+	for(int i=0; i<50; i++){cmde[i]=' ';}
 
 	pfp.code = 3;
 
-	cout << "Host name " << s << endl; 	
+	cout << "Host name " << s << endl;
 
+	// Signal
+	signal(SIGINT, (sig_t)bye);
 
 	/* CREATION DES THREADS	*/
 	pthread_attr_t *thread_attributes;
 	pthread_t *thread;
-
-	signal(SIGINT, (sig_t)bye);
 
 	/* creation du thread processus communication au sol */
 	tid_sol = 1;
@@ -229,7 +240,7 @@ int main (int argc, char* argv[])
 	thread=(pthread_t *)malloc(sizeof(pthread_t));
 
 	pthread_attr_init(thread_attributes);
-	if (pthread_create(thread, thread_attributes, &Communic_Sol,(void *) NULL) != 0) 
+	if (pthread_create(thread, thread_attributes, &Communic_Sol,(void *) NULL) != 0)
 		perror ("Thread_Server-> Failure detector thread pb!");
 
 	/* creation du thread processus communication interne */
@@ -242,7 +253,7 @@ int main (int argc, char* argv[])
 	if (pthread_create(thread, thread_attributes, &Communic_Interne, (void *) argv_void) != 0)  
 		perror ("Thread_Server-> Image mgt thread pb!");
 
-	while (1) { }  /* DOES NOTHING */ ;
+	while (1) {usleep(100);}  /* DOES NOTHING */ ;
 
 	return 0;
 }
