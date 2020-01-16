@@ -6,7 +6,6 @@
 
 using namespace std;
 
-//#include "../ARINC/ARINC_Com.h"
 #include "../planManager/planManager.h"
 
 int main (int argc,char* argv[])
@@ -37,6 +36,7 @@ int main (int argc,char* argv[])
 
 	while (1)
 	{
+		cout << "What do you want to do ?"<< endl;
 		cout << "('p' to send a plan ; 'r' to receive the photos)" << endl;
 		char c;
 		scanf(" %c", &c);
@@ -47,12 +47,9 @@ int main (int argc,char* argv[])
 			p.code = 5;
 			scanf("%11s[^\n]", p.name);
 			cout << "Sending Plan..." << endl;	
-			string filepath(p.name);
-			filepath=""+filepath;
-			sprintf(cmde, "sh src/communication/uploadGtoS.sh %s", p.name);
+			sprintf(cmde, "sh src/communicaton/uploadGtoS.sh %s", p.name);
 			system(cmde);
 			sleep(2);
-			//channelOut.SendQueuingMsg((char*)&p, sizeof(PlanName));
 
 			cout << "Plan sent !" << endl;
 		}
@@ -60,34 +57,12 @@ int main (int argc,char* argv[])
 		{
 			p.code = 10;
 			//char file_demande = "demande_imgs.txt";
-			//channelOut.SendQueuingMsg((char*)&p, sizeof(PlanName));
-			sprintf(cmde, "sh src/communication/uploadGtoSr.sh %s", "demande_imgs.txt");
+			sprintf(cmde, "sh src/communication/uploadGtoS.sh %s", "demande_imgs.txt");
 			printf("demande image envoyee");
 			system(cmde);
 			cout << "Receiving the images..." << endl;
 			sleep(2);
 		}
-
-		cout << "What do you want to do ?"<< endl;
-
-		/*
-		p.name[0] = 'p';
-		p.name[1] = 'l';
-		p.name[2] = 'a';
-		p.name[3] = 'n';
-		p.name[4] = '1';
-		p.name[5] = '_';
-		p.name[6] = '1';
-		p.name[7] = '.';
-		p.name[8] = 't';
-		p.name[9] = 'x';
-		p.name[10] = 't';
-		p.name[11] = '\0';
-		p.name[12] = '\0';
-		p.name[13] = '\0';
-		p.name[14] = '\0';
-		p.name[15] = '\0';
-		*/
 	}
 
 	return 0;
