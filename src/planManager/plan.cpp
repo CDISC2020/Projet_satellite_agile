@@ -60,9 +60,13 @@ void Plan::loadPlan(const char* filepath)
 					planInstruction = new AttitudeInstruction(planLine); 
 				} 
 				
-				if (type == "p") 
+				else if (type == "p") 
 				{
 					planInstruction = new PhotoInstruction(planLine); 
+				}
+				else
+				{
+					//Message d'erreur!
 				}
 				this->stockInstruction(planInstruction);
 				line ++;

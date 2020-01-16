@@ -17,10 +17,7 @@ GenericInstruction::GenericInstruction(string base)
 	min =  (atoi(time.c_str())%10000)/100;
 	sec =  atoi(time.c_str())%100;
 	
-	string type = base.substr(6,1);
-	char *aux = new char[1];
-	strcpy(aux , type.c_str());
-	type = *aux;
+	type = base.substr(6,1).c_str()[0];
 }
 
 void GenericInstruction::printInstruction() 

@@ -11,7 +11,6 @@ PlanManager::PlanManager()
 
 void PlanManager::executePlan(Controller* control, int* responseController,QueuingPort* ChannelErreur)
 {
-
 	if (nPlan > 0) 
 	{
 		Plan P = this->Plans[indexPlan];
@@ -27,10 +26,12 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 
 		time_t t = time(0);
 		struct tm * now = localtime(&t);
+		cout << "now         = " << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec << endl;
+		cout << "Instruction = " << currentInst->getHour() << ":" << currentInst->getMin() << ":" << currentInst->getSec() << endl;
 
 		int group = currentInst->getIndex();
 		if ((this->bannedInstructions[group]) == true) jumpInstruction = true;
-		
+
 		if ((jumpInstruction == false) && (nPlan > 0) ) 
 		{
 			if ((now->tm_hour == currentInst->getHour()) & (now->tm_min == currentInst->getMin()) & (now->tm_sec == currentInst->getSec())) 
@@ -44,11 +45,12 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 			/ 4 = Status
 			/ 5 = data
 			*/
-				cout<<"C'est l'heure ";
+				cout<<"C'est l'heure "<<endl;
 				bool start_timeout = false;
 				/*--------------Call Controller to execute instruction-------------*/
 				if(currentInst->getType() == 'p' || currentInst->getType() == 'a')
 				{
+					cout << "control EXECUTE!" << endl;
 					control->executeInstruction(currentInst, responseController, ChannelErreur, &P, ptInstruction);
 					start_timeout = true;
 				}
@@ -128,8 +130,9 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 
 			} 
 			// Cas où le temps de l'instruction est déjà passé... on l'aura jamais !
-			else if ( ((now->tm_hour == currentInst->getHour()) && (now->tm_min > currentInst->getMin())) 
-				||((now->tm_min  == currentInst->getMin())  && (now->tm_sec > currentInst->getSec()))) 
+			else if ( (now->tm_hour > currentInst->getHour())
+				|| ((now->tm_hour == currentInst->getHour()) && (now->tm_min > currentInst->getMin())) 
+				|| ((now->tm_min  == currentInst->getMin())  && (now->tm_sec > currentInst->getSec())))
 			{ 
 				cout<<"L'heure est deja passé "<<ptInstruction<<endl;
 				Status S_heure;
@@ -146,6 +149,7 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 			cout<<"Instruction jumped"<<endl;
 		}
 
+
 		//}
 		if (ptInstruction >= P.getnInstructions()) // Fin d'un plan d'instruction, on passe au suivant.
 		{
@@ -154,12 +158,14 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 			nPlan--;
 			for (int k=0; k< 100; k++) this->bannedInstructions[k] = false;
 		}
-		
+
 	} // end big if
 }
 
 void PlanManager::generatePlan(const char* filepath)
 {
+	cout << "GENERATE PLAN" << endl;
+
 	int version;
 	int num_plan;
 	bool existnewPlan = false;

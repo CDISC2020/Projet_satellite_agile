@@ -71,9 +71,12 @@ int  main (int argc,char* argv[])
 		}
 		else if(status->code == 5) 
 		{
+			cout << "plant recu!" << endl;
 			p = (PlanName*)buffer;
-			for(int i=0; i<11; i++)
-				pfp.filepath[i] = p->name[i];
+			string name(p->name);
+			string path="src/planManager/plans/"+name;
+			for(unsigned int i=0; i<path.length(); i++)
+				pfp.filepath[i] = path[i];
 			cout<<p->name;
 			channelOutPM.SendQueuingMsg((char*)&pfp, sizeof(PlanFilePath));
 		}
