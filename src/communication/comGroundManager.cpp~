@@ -165,8 +165,7 @@ void* Communic_Interne(void* argv){
     			files.erase(files.end());
 			
 		    	for (unsigned int i = 0;i < files.size();i++) {
-				char c=files[i][0];				
-				pfp.filepath[i] = c;
+				pfp.filepath[i] = files[i];
 		    	}
 			cout << pfp.filepath << "buffer pfp";
 			channelOutPM.SendQueuingMsg((char*)&pfp, sizeof(PlanFilePath));
