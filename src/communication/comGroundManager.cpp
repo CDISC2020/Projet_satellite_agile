@@ -25,6 +25,7 @@ using namespace std;
 int tid_sol, tid_interne, tid_alive;
 StatusManager sm;
 Status *status;
+Status *statusFDIR;
 PlanName *p;
 ModeStruct *m;
 PlanFilePath *imageName;
@@ -35,10 +36,10 @@ bool mode = true; // Mode slave;
 char s[100];
 
 char buffer[1024];
+char bufferFDIR[1024];
 char cmde[50];
 
-int wtc_td1 = 0;
-int wtc_td2 = 0;
+int wtc = 0;
 
 //mutex sut tableau list_images
 
@@ -68,32 +69,47 @@ void* Communic_Sol(void* args)
 	QueuingPort channelOutPM(0, 18001, args_char); 	// Client PM
 	channelOutPM.Display();
 
-	PlanFilePath pfp;
+	PlanFilePath pfp_plan, pfp_tm;
 
-	string dir = string("src/communication/planRecuSol");
-    	vector<string> files;
-	vector<string>::iterator it;
+	string dir_plan = string("src/communication/planRecuSol");
+	string dir_tm = string("src/communication/tmRecuSol");
+    	vector<string> files, tms;
+	vector<string>::iterator it, it_plan, it_tm;
 
 	ifstream ifile;
-	string name;
+	string name_dem = "demande_imgs.txt";
+	string name_plan = "plan.txt";
+	string name_tm = "tm.txt";
 
+	pfp_plan.code = 3;
+	string c_plan = "src/planManager/plans";
+	for (unsigned int i = 0;i < c_plan.size(); i++)
+		pfp_plan.filepath[i] = c_plan[i];
+
+	pfp_tm.code = 4;
+	string c_tm = "src/planManager/tm";
+	for (unsigned int i = 0;i < c_tm.size(); i++)
+		pfp_tm.filepath[i] = c_tm[i];
 
 	while(1)
 	{
 		if(mode == true)
 		{
 			files.clear();
-    			getdir(dir,files);
+			tms.clear();
 
-			name="demande_imgs.txt";
-			it=find(files.begin(),files.end(),name);
+    			getdir(dir_plan,files);	
+
+			/*****************************[ CGM ---IMGS---> SOL ]**********************************/
+			it=find(files.begin(),files.end(),name_dem);
 			if(it!=files.end()) // Si fichier présent dans la liste
 			{
 				cout << "File find" << endl;
 
-				//sprintf(cmde, "sh src/communication/uploadStoG.sh, "LogError.txt");
-				//system(cmde);
-				ptImageReceived=1;
+				sprintf(cmde, "sh src/communication/uploadStoG.sh LogError.txt");
+				system(cmde);
+
+				//ptImageReceived=1;
 				while(ptImageSent != ptImageReceived)
 				{
 					//cout << "boucle \n";
@@ -117,39 +133,50 @@ void* Communic_Sol(void* args)
 				cout << "Demande enlevée\n";
 				sleep(5);
 			}
-
-			name="plan.txt";
-			it=find(files.begin(),files.end(),name);
-			if(it!=files.end()) // Si fichier présent dans la liste
+			
+			/*****************************[ CGM ---PLAN---> PM ]**********************************/
+			it_plan=find(files.begin(),files.end(),name_plan);
+			if(it_plan!=files.end()) // Si fichier présent dans la liste
 			{
-				// deplace dans src/planMagager/planRecu avec system()
+				// deplace dans src/planMagager/plans avec system()
 
 				sprintf(cmde, "mv src/communication/planRecuSol/plan.txt src/planManager/plans");
 				system(cmde);
 				sleep(1);
-				cout << "plan envoyé au PM";
-
-				string c="src/planManager/plans";
-
-				for (unsigned int i = 0;i < c.size(); i++)
-					pfp.filepath[i] = c[i];
-				//cout << pfp.filepath << "buffer pfp";
-
-				channelOutPM.SendQueuingMsg((char*)&pfp, sizeof(PlanFilePath));
+				cout << "Plan envoyé au PM\n";
+				
+				channelOutPM.SendQueuingMsg((char*)&pfp_plan, sizeof(PlanFilePath));
 			}
+
+			/*****************************[ CGM ---TM---> PM ]**********************************/
+    			getdir(dir_tm,tms);			
+			it_tm=find(tms.begin(),tms.end(),name_tm);
+			if(it_tm!=tms.end()) // Si fichier présent dans la liste
+			{
+				// deplace dans src/planMagager/tm avec system()
+
+				sprintf(cmde, "mv src/communication/tmRecuSol/tm.txt src/planManager/tm");
+				system(cmde);
+				sleep(1);
+				cout << "TM envoyé au PM\n";
+
+				channelOutPM.SendQueuingMsg((char*)&pfp_tm, sizeof(PlanFilePath));
+			}
+
 		}
 
 		else{
-			cout << "In follower mode" << endl;}
+			cout << "In follower mode\n" << endl;}
 
-		wtc_td1 = 1;
+		wtc = 1;
 
 		usleep(100);
 	}
 
 	return NULL;
 }
-/*----------------------------COMMUNICATION INTER-PARTITIONS---------------------------------*/
+
+/*----------------------------COMMUNICATION AVEC PLAN MANAGER---------------------------------*/
 void* Communic_Interne(void* argv)
 {
 	sleep(1);	
@@ -171,6 +198,7 @@ void* Communic_Interne(void* argv)
 			string aux(imageName->filepath);
 			imageList[ptImageReceived] = aux;
 			ptImageReceived = (ptImageReceived + 1)%128;
+			
 		}
 
 		// Plan manager --> Comunication Manager
@@ -181,24 +209,44 @@ void* Communic_Interne(void* argv)
 			sm.newNotification(status->errorID, str);
 		}
 
+		usleep(100);
+	}
+
+	return NULL;
+}
+
+/*----------------------------COMMUNICATION AVEC FDIR---------------------------------*/
+void* Communic_fdir(void* argv)
+{
+	sleep(2);	
+	
+	QueuingPort channelInFDIR(1, 18002, s); 		// Server
+
+	channelInFDIR.Display();
+
+	while(1)
+	{
+		channelInFDIR.RecvQueuingMsg(bufferFDIR);
+
+		statusFDIR = (Status*)bufferFDIR;
+
 		// changement mode primary ou backup
-		else if(status->code == 6)
+		if(statusFDIR->code == 6)
 		{
-			m = (ModeStruct*)buffer;
+			m = (ModeStruct*)bufferFDIR;
 			mode = m->rpiMode;
 		}
-
-		wtc_td2 = 1;
 
 		usleep(100);
 	}
 
 	return NULL;
 }
+
 /*---------------------------------ALIVE--------------------------------------*/
 void* am_alive(void* argv)
 {
-	sleep(2);	
+	sleep(3);	
 
 	char* argv_char = static_cast<char*>(argv);
 	QueuingPort channelFDIR(0, 18002, argv_char);
@@ -207,18 +255,15 @@ void* am_alive(void* argv)
 	char str[100]="C";
 	while (1) 
 	{
-		int wtc = wtc_td1*wtc_td2;
-		cout << wtc;
 		if(wtc == 1){
 			channelFDIR.SendQueuingMsg(str, sizeof(str));
 			//cout << "im alive" << str;
-			wtc_td1 = 0;
-			wtc_td2 = 0;
+			wtc = 0;
 		}
 		else{
 			//cout << "im not alive\n";
 		}
-		usleep(10000);
+		usleep(1000000000000000000);
 	}
 }
 /*---------------------------------BYYYE--------------------------------------*/
