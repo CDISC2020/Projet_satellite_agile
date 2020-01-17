@@ -1,4 +1,5 @@
-
+#ifndef DEF_WDI
+#define DEF_WDI
 
 using namespace std;
 
@@ -13,3 +14,4 @@ public:
 	WatchdogInterne();
 };
 
+#endif

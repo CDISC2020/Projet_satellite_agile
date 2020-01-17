@@ -46,8 +46,8 @@ plan: $(WP_PLAN)plan.cpp $(WP_PLAN)plan.h
 planManager: $(WP_PLAN)planManager.cpp $(WP_PLAN)planManager.h $(WP_PLAN)main_PM.cpp
 	$(CC) -c $(WP_PLAN)planManager.cpp $(WP_PLAN)planManager.h $(WP_PLAN)main_PM.cpp
 
-comGroundManager: $(WP_COM)comGroundManager.cpp
-	$(CC) -c $(WP_COM)comGroundManager.cpp
+comGroundManager: $(WP_COM)comGroundManager.cpp $(WS_FDIR)FDIR.h
+	$(CC) -c $(WS_FDIR)FDIR.h $(WP_COM)comGroundManager.cpp
 
 statusManager:  $(WP_COM)statusManager.cpp $(WP_COM)statusManager.h
 	$(CC) -c $(WP_COM)statusManager.cpp $(WP_COM)statusManager.h
@@ -68,8 +68,8 @@ controller: $(WP_PLAN)Controller.cpp $(WP_PLAN)Controller.h
 gpio : src/GPIO.cpp src/GPIO.h
 	$(CC) -c src/GPIO.cpp
 
-main_PM: ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o main_PM.o Controller.o
-	$(CC) ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o main_PM.o Controller.o -o main_PM
+main_PM: ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o main_PM.o Controller.o $(WS_FDIR)FDIR.h
+	$(CC) ARINC_Com.o genericInstruction.o $(WS_FDIR)FDIR.h plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o main_PM.o Controller.o -o main_PM
 
 main_com: ARINC_Com.o statusManager.o comGroundManager.o
 	$(CC) ARINC_Com.o statusManager.o comGroundManager.o -o main_Com_ST

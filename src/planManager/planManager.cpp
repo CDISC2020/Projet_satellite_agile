@@ -11,7 +11,7 @@ PlanManager::PlanManager()
 
 void PlanManager::executePlan(Controller* control, int* responseController,QueuingPort* ChannelErreur, bool mode)
 {
-	if (nPlan > 0) 
+	if (nPlan > 0)
 	{
 		Plan P = this->Plans[indexPlan];
 		GenericInstruction* currentInst;
@@ -32,9 +32,9 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 		int group = currentInst->getIndex();
 		if ((this->bannedInstructions[group]) == true) jumpInstruction = true;
 
-		if ((jumpInstruction == false) && (nPlan > 0) ) 
+		if ((jumpInstruction == false) && (nPlan > 0) )
 		{
-			if ((now->tm_hour == currentInst->getHour()) & (now->tm_min == currentInst->getMin()) & (now->tm_sec == currentInst->getSec())) 
+			if ((now->tm_hour == currentInst->getHour()) & (now->tm_min == currentInst->getMin()) & (now->tm_sec == currentInst->getSec()))
 			{
 			/*
 			/ Codes des messages a envoyer :
@@ -57,11 +57,11 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 						*responseController=1;
 					start_timeout = true;
 				}
-				else 
+				else
 				{
 					Status S;
 					S.code = 4;
-					S.errorID = 2; // A changer.		
+					S.errorID = 2; // A changer.
 					sprintf(S.description, "Wrong instruction type, Plan %d.%d : Line #%d : Index : #%d ",P.getID(),P.getVersion(), ptInstruction+1,  group);
 
 					ChannelErreur->SendQueuingMsg((char*)&S, sizeof(Status));
@@ -69,8 +69,8 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 				/*---------------------------------------------------------*/
 
 				/*-------------Wait for Time Out of the controller response-----------*/
-				int time_out = 1000000; 
-				if (start_timeout == true) 
+				int time_out = 1000000;
+				if (start_timeout == true)
 				{
 					while (time_out > 0 && *responseController == 0)
 					{
@@ -81,9 +81,9 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 				/*-------------------------------------------------------------------*/
 
 				/*--------------------   Management of the errors    ----------------*/
-				if (*responseController != 1) 
+				if (*responseController != 1)
 				{
-					bannedInstructions[group] = true; 
+					bannedInstructions[group] = true;
 					if (*responseController == -1)
 					{
 						cout<<"Instruction "<<group<<" banned : error from controller"<<endl;
@@ -92,17 +92,17 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 
 						if (currentInst->getType() == 'a')
 						{
-							// The attitude was not reached 
+							// The attitude was not reached
 							S_controller.errorID = 0; 	// Look the error list
 							sprintf(S_controller.description, "Attitude not reached. Plan %d.%d : Line #%d : Index #%d ",P.getID(),P.getVersion(), ptInstruction+1,  group);
-						}	
+						}
 						if (currentInst->getType() == 'p')
 						{
-							// The photo was not taken 
+							// The photo was not taken
 							S_controller.errorID = 1; // Look the error list
-							sprintf(S_controller.description, "Photo not taken. Plan %d.%d : Line #%d : Index #%d ",P.getID(),P.getVersion(), ptInstruction+1,  group);	
+							sprintf(S_controller.description, "Photo not taken. Plan %d.%d : Line #%d : Index #%d ",P.getID(),P.getVersion(), ptInstruction+1,  group);
 						}
-						
+
 						cout << S_controller.description << endl;
 
 						ChannelErreur->SendQueuingMsg((char*)&S_controller, sizeof(Status));
@@ -114,14 +114,14 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 					}
 				}
 				/*-------------------------------------------------------------------*/
-				
+
 				/*-----------------   Photo sending to the ComGrdMnger  -------------*/
-				if ( *responseController == 1  && currentInst->getType() == 'p') 
+				if ( *responseController == 1  && currentInst->getType() == 'p')
 				{
 					PlanFilePath PhotoPath;
 					PhotoPath.code = 3;
 					string aux =  ((PhotoInstruction*)currentInst)->getPhotoName();
-					strcpy (PhotoPath.filepath , aux.c_str()) ; 	
+					strcpy (PhotoPath.filepath , aux.c_str()) ;
 					printf("Sending the photo %s \n", PhotoPath.filepath);
 					ChannelErreur->SendQueuingMsg((char*)&PhotoPath, sizeof(PlanFilePath));
 				}
@@ -131,12 +131,12 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 				ptInstruction++;
 
 
-			} 
+			}
 			// Cas où le temps de l'instruction est déjà passé... on l'aura jamais !
 			else if ( (now->tm_hour > currentInst->getHour())
-				|| ((now->tm_hour == currentInst->getHour()) && (now->tm_min > currentInst->getMin())) 
+				|| ((now->tm_hour == currentInst->getHour()) && (now->tm_min > currentInst->getMin()))
 				|| ((now->tm_min  == currentInst->getMin())  && (now->tm_sec > currentInst->getSec())))
-			{ 
+			{
 				cout<<"L'heure est deja passé "<<ptInstruction<<endl;
 				Status S_heure;
 				S_heure.code = 4;
@@ -145,8 +145,8 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 
 				ptInstruction++;
 			}
-		} 
-		else if (jumpInstruction) 
+		}
+		else if (jumpInstruction)
 		{
 			ptInstruction++;
 			cout<<"Instruction jumped"<<endl;
@@ -223,4 +223,13 @@ void PlanManager::printPlan(int indexPlan)
 void PlanManager::pushBan(int index)
 {
 	this->bannedInstructions[index]= true;
+}
+void PlanManager::destructPlans()
+{
+    this->nPlan = 0;
+	this->ptInstruction = 0;
+	this->indexPlan = 0;
+	for(i=0;i<PLANS_BUFFER_SIZE;i++){
+            delete this->Plans[i];
+	}
 }

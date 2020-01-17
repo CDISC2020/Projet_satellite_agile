@@ -42,7 +42,7 @@ struct ModeStruct {
 	bool rpiMode;
 };
 
-class PlanManager 
+class PlanManager
 {
 protected:
 	Plan Plans[PLANS_BUFFER_SIZE];
@@ -57,6 +57,7 @@ public:
 	void generatePlan(const char*);
 	void printPlan(int indexPlan);
 	void pushBan(int index);
+	void destructPlans();
 };
 
 #endif
