@@ -12,7 +12,6 @@
 
 #include "planManager.h"
 #include "Controller.h"
-#include "../safety/watchdog.h"
 #include "../communication/statusManager.h"
 #include "../GPIO.h"
 #define LOW 0
@@ -69,54 +68,12 @@ void * Server_PM(void *args)
 	return NULL;
 }
 
-
-//DEBUT PARTIE SURETE DE FONCTIONNEMENT
-
-
-Watchdog watchdog;
 bool mode; // 'false' pour follower et 'true' pour leader
 // En pratique, le mode devra aussi être envoyé au ComGroundManager
 
-void changeMode()
-{
-	// passage en mode Leader : le mode doit être envoyé au ComGroundManager
-	mode=true;
-
-	ModeStruct m;
-	m.code = 6;
-	m.rpiMode = true;
-	cout << endl << "Changement de mode : Leader" << endl;
-	channelSM->SendQueuingMsg((char*)&m, sizeof(ModeStruct));
-}
-
 void before()
 {
-// Vérification watchdog, recouvrement si besoin
-
-	if (mode==true)
-	{
-		watchdog.set(); 		// I'm alive!!!!!
-
-		cout << "Leader : I'm alive" << endl;
-	}
-
-
-	if (mode==false)
-	{
-		sleep(1);
-		int state;
-		cout << "Follower : Test watchdog" << endl;
-		state = watchdog.readw(); // test watchdog
-		cout << "State " << state << endl;
-
-		// Recovery
-		if(state==0)
-		{
-			cout << "Follower : changement de mode" << endl;
-			changeMode(); // changement de mode
-		}
-	}
-
+// Maintenant c'est le FDIR qui gère les watchdog, donc plus ici ! :)
 }
 
 void proceed()
@@ -130,25 +87,16 @@ void proceed()
 sig_t bye()
 {
 	cout << "Mort........" << endl;
-	GPIOWrite(3,LOW);
 	exit(0);
 }
 
 void after()
 {
-	// .... do nothing
+	// .... do nothing, mais peut-être que c'est la qu'il faut dire à la safety qu'one est vivant ?
 }
 
 void * Client_PM(void *args)
 {
-	// Partie Surete de fonctionnement
-	mode = false; // par défaut, follower
-	ModeStruct m;
-	m.code = 6;
-	m.rpiMode = false;
-	cout << endl << "Initialisation mode Follower" << endl;
-	channelSM->SendQueuingMsg((char*)&m, sizeof(ModeStruct));
-
 	signal(SIGINT, (sig_t)bye);
 
 	while(1)
@@ -160,10 +108,6 @@ void * Client_PM(void *args)
 
 	return NULL;
 }
-
-
-//FIN PARTIE SURETE DE FONCTIONNEMENT
-
 
 int  main (int argc,char* argv[])
 {

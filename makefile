@@ -9,7 +9,7 @@ ARINC = src/ARINC/
 # Workpackage directories
 WP_PLAN = src/planManager/
 WP_COM = src/communication/
-WP_SAF = src/safety/
+WS_FDIR = src/FDIR/
 
 # exemples sur les sockets :  quels sockets???
 all:
@@ -25,8 +25,7 @@ all:
 	$(MAKE) cameraController
 	$(MAKE) controller
 	$(MAKE) gpio
-	$(MAKE) watchdog
-	$(MAKE) fdir
+	$(MAKE) main_FDIR
 	$(MAKE) main_PM
 	$(MAKE) main_com
 	$(MAKE) main_FDIR
@@ -69,20 +68,14 @@ controller: $(WP_PLAN)Controller.cpp $(WP_PLAN)Controller.h
 gpio : src/GPIO.cpp src/GPIO.h
 	$(CC) -c src/GPIO.cpp
 
-watchdog : $(WP_SAF)watchdog.cpp $(WP_SAF)watchdog.h
-	$(CC) -c $(WP_SAF)watchdog.cpp $(WP_SAF)watchdog.h
-
-fdir: $(WP_SAF)main_FDIR.cpp
-	$(CC) -c $(WP_SAF)main_FDIR.cpp
-
-main_PM: ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o watchdog.o main_PM.o Controller.o
-	$(CC) ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o watchdog.o main_PM.o Controller.o -o main_PM
+main_PM: ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o main_PM.o Controller.o
+	$(CC) ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o main_PM.o Controller.o -o main_PM
 
 main_com: ARINC_Com.o statusManager.o comGroundManager.o
 	$(CC) ARINC_Com.o statusManager.o comGroundManager.o -o main_Com_ST
 
-main_FDIR: main_FDIR.o
-	$(CC) main_FDIR.o -o main_FDIR
+main_FDIR: $(WS_FDIR)main_FDIR.cpp 
+	$(CC) $(WS_FDIR)main_FDIR.cpp $(WS_FDIR)FDIR.cpp $(ARINC)ARINC_Com.cpp 	$(WS_FDIR)WatchdogInterne.cpp $(WS_FDIR)watchdog_arduino.cpp src/GPIO.cpp  -o main_FDIR
 
 main_Ground: ARINC_Com.o Ground.o
 	$(CC) ARINC_Com.o Ground.o -o main_Ground

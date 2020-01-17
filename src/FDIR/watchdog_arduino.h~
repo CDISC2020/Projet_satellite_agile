@@ -1,5 +1,5 @@
-#ifndef WATCHDOG
-#define WATCHDOG
+#ifndef WATCHDOG_ARDUINO
+#define WATCHDOG_ARDUINO
 
 
 #include <iostream>
@@ -15,10 +15,10 @@
 
 using namespace std;
 
-class Watchdog 
+class Watchdog _arduino
 {
 public:
-	Watchdog();
+	Watchdog_arduino();
 	void set();
 	int readw();
 };

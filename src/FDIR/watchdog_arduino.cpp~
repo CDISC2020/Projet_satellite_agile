@@ -1,4 +1,4 @@
-#include "watchdog.h"
+#include "watchdog_arduino.h"
 
 using namespace std;
 
