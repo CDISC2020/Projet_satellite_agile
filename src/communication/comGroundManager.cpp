@@ -79,62 +79,49 @@ void* Communic_Sol(void *args)
 			it=find(files.begin(),files.end(),name);
 			if(it!=files.end()) // Si fichier présent dans la liste
 			{
-		   		ifile.open(name);
-				if(ifile) // si on arrive à l'ouvrir
+				cout << "File find" << endl;
+
+				//sprintf(cmde, "sh src/communication/uploadStoG.sh, "LogError.txt");
+				//system(cmde);
+
+				while(ptImageSent != ptImageReceived)
 				{
-					cout << "File find" << endl;
+					//cout << "boucle \n";
+					// envoyer les images existentes
+					sprintf(cmde, "sh src/communication/uploadStoG.sh %s", imageList[ptImageSent].c_str());
+					system(cmde);
+					sleep(1);
+					cout << "Img envoyée " << endl;
 
-					//sprintf(cmde, "sh src/communication/uploadStoG.sh, "LogError.txt");
-					//system(cmde);
+					//enlever du satellite l'image envoyée au sol
+					sprintf(cmde, "rm %s", imageList[ptImageSent].c_str());
+					system(cmde);
+					cout << "Images enlevées" << endl;
 
-					while(ptImageSent != ptImageReceived)
-					{
-						//cout << "boucle \n";
-						// envoyer les images existentes
-						sprintf(cmde, "sh src/communication/uploadStoG.sh %s", imageList[ptImageSent].c_str());
-						system(cmde);
-						sleep(1);
-						cout << "Img envoyée " << endl;
+					ptImageSent = (ptImageSent + 1)%128;
 
-						//enlever du satellite l'image envoyée au sol
-						sprintf(cmde, "rm %s", imageList[ptImageSent].c_str());
-						system(cmde);
-						cout << "Images enlevées" << endl;
+				}// lancer bash qui envoie chaque photo du tableau.
 
-						ptImageSent = (ptImageSent + 1)%128;
-
-					}// lancer bash qui envoie chaque photo du tableau.
-
-					ifile.close();
-					remove(name.c_str());
-					cout << "Demande enlevée\n";
-				}
+				remove(name.c_str());
+				cout << "Demande enlevée\n";
 			}
 
 			name="plan.txt";
 			it=find(files.begin(),files.end(),name);
 			if(it!=files.end()) // Si fichier présent dans la liste
 			{
-		   		ifile.open(name);
-				if(ifile) // si on arrive à l'ouvrir
-				{
-					// Faire des trucs
+				// Adapter ici le path du fichier pour l'executer dans la suite
+				// (apres l'avoir déplacé)
+				// if y a un plan
 
-					// Adapter ici le path du fichier pour l'executer dans la suite
-					// (apres l'avoir déplacé)
-					// if y a un plan
-					/*for (unsigned int i = 0;i < files.size();i++)
-						pfp.filepath[i] = files[i][0];
-					cout << pfp.filepath << "buffer pfp";
-					channelOutPM.SendQueuingMsg((char*)&pfp, sizeof(PlanFilePath));*/
-
-					ifile.close();
-					//remove(name.c_str()); // deplace dans src/planMagager/planRecu avec system()
-				}
+				// deplace dans src/planMagager/planRecu avec system()
+				// sprintf(cmde "mv plan.txt src/planManager/planRecu
+				// system(cmde)
+				/*for (unsigned int i = 0;i < files.size();i++)
+					pfp.filepath[i] = files[i][0];
+				cout << pfp.filepath << "buffer pfp";
+				channelOutPM.SendQueuingMsg((char*)&pfp, sizeof(PlanFilePath));*/
 			}
-
-			else
-				cout << "No file" << endl;
 		}
 
 		else
