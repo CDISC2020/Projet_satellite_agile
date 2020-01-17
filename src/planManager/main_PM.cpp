@@ -124,7 +124,7 @@ void proceed()
 // Fonctionnement normal
 	sleep(1);
 	cout << "Fonctionnement" << endl;
-	PM.executePlan(&control, &responseController,channelSM );
+	PM.executePlan(&control, &responseController,channelSM, mode);
 }
 
 sig_t bye()

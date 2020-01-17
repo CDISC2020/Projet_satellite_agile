@@ -9,7 +9,7 @@ PlanManager::PlanManager()
 	this->indexPlan = 0;
 }
 
-void PlanManager::executePlan(Controller* control, int* responseController,QueuingPort* ChannelErreur)
+void PlanManager::executePlan(Controller* control, int* responseController,QueuingPort* ChannelErreur, bool mode)
 {
 	if (nPlan > 0) 
 	{
@@ -51,7 +51,10 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 				if(currentInst->getType() == 'p' || currentInst->getType() == 'a')
 				{
 					cout << "control EXECUTE!" << endl;
-					control->executeInstruction(currentInst, responseController, ChannelErreur, &P, ptInstruction);
+					if(mode)
+						control->executeInstruction(currentInst, responseController, ChannelErreur, &P, ptInstruction);
+					else
+						*responseController=1;
 					start_timeout = true;
 				}
 				else 

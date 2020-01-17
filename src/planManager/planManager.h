@@ -53,7 +53,7 @@ protected:
 
 public:
 	PlanManager();
-	void executePlan(Controller* , int *,QueuingPort*);
+	void executePlan(Controller* , int *,QueuingPort*, bool);
 	void generatePlan(const char*);
 	void printPlan(int indexPlan);
 	void pushBan(int index);
