@@ -111,6 +111,8 @@ void* Communic_Sol(void *args)
 		else 
 			cout << "In follower mode" << endl;
 	}
+	
+	return NULL;
 }
 
 /*----------------------------COMMUNICATION INTER-PARTITIONS---------------------------------*/
@@ -190,8 +192,9 @@ void* Communic_Interne(void* argv)
 				ptImageSent = (ptImageSent + 1)%128;
 			}// lancer bash qui envoie chaque photo du tableau.
 		}
-
 	}
+
+	return NULL;
 }
 
 /*---------------------------------BYYYE--------------------------------------*/
