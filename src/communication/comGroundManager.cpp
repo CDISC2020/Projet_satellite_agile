@@ -21,7 +21,7 @@ using namespace std;
 #include "../FDIR/FDIR.h"
 
 /*-------------------------------VARIABLES--------------------------------------*/
-int tid_sol, tid_interne;
+int tid_sol, tid_interne, tid_alive;
 StatusManager sm;
 Status *status;
 PlanName *p;
@@ -30,11 +30,15 @@ PlanFilePath *imageName;
 string imageList[128];
 int ptImageReceived = 0;
 int ptImageSent = 0;
-bool mode = false; // Mode slave;
+bool mode = true; // Mode slave;
 char s[100];
 
 char buffer[1024];
 char cmde[50];
+
+int wtc_td1 = 0;
+int wtc_td2 = 0;
+
 //mutex sut tableau list_images
 
 /*---------------------------------FONCTIONS AUX--------------------------------------*/
@@ -134,18 +138,21 @@ void* Communic_Sol(void* args)
 			}
 		}
 
-		else
-			cout << "In follower mode" << endl;
+		else{
+			cout << "In follower mode" << endl;}
+
+		wtc_td1 = 1;
 
 		usleep(100);
 	}
 
 	return NULL;
 }
-
 /*----------------------------COMMUNICATION INTER-PARTITIONS---------------------------------*/
 void* Communic_Interne(void* argv)
 {
+	sleep(1);	
+	
 	QueuingPort channelIn(1, 18003, s); 		// Server
 
 	channelIn.Display();
@@ -180,12 +187,39 @@ void* Communic_Interne(void* argv)
 			mode = m->rpiMode;
 		}
 
+		wtc_td2 = 1;
+
 		usleep(100);
 	}
 
 	return NULL;
 }
+/*---------------------------------ALIVE--------------------------------------*/
+void* am_alive(void* argv)
+{
+	sleep(2);	
 
+	char* argv_char = static_cast<char*>(argv);
+	QueuingPort channelFDIR(0, 18002, argv_char);
+
+	channelFDIR.Display(); //quelques info sur l'ouverture du socket
+	char str[100]="C";
+	while (1) 
+	{
+		int wtc = wtc_td1*wtc_td2;
+		cout << wtc;
+		if(wtc == 1){
+			channelFDIR.SendQueuingMsg(str, sizeof(str));
+			//cout << "im alive" << str;
+			wtc_td1 = 0;
+			wtc_td2 = 0;
+		}
+		else{
+			//cout << "im not alive\n";
+		}
+		usleep(10000);
+	}
+}
 /*---------------------------------BYYYE--------------------------------------*/
 sig_t bye()
 {
@@ -209,6 +243,7 @@ int main (int argc, char* argv[])
 		perror("S-> gethostname");
 		exit(1);
 	}
+
 	cout << "Host name " << s << endl;
 
 	// Cast des arguments pour les envoyer aux threads
@@ -234,7 +269,7 @@ int main (int argc, char* argv[])
 
 	pthread_attr_init(thread_attributes);
 	if (pthread_create(thread, thread_attributes, &Communic_Sol,(void *) argv_void) != 0)
-		perror ("Thread_Server-> Failure detector thread pb!");
+		perror ("Thread_Server-> Communication au sol error!");
 
 	/* creation du thread processus communication interne */
 	tid_interne=2;
@@ -244,7 +279,17 @@ int main (int argc, char* argv[])
 
 	pthread_attr_init(thread_attributes);
 	if (pthread_create(thread, thread_attributes, &Communic_Interne, (void *) NULL) != 0)
-		perror ("Thread_Server-> Image mgt thread pb!");
+		perror ("Thread_Server-> Communication interne error!");
+
+	/* creation du thread processus I'm alive */
+	tid_alive=3;
+
+	thread_attributes=(pthread_attr_t *)malloc(sizeof(pthread_attr_t));
+	thread=(pthread_t *)malloc(sizeof(pthread_t));
+
+	pthread_attr_init(thread_attributes);
+	if (pthread_create(thread, thread_attributes, &am_alive, (void *)  argv_void) != 0)
+		perror ("Thread_Server-> I am alive error!");
 
 	while (1) {usleep(100);}  /* DOES NOTHING */ ;
 
