@@ -24,6 +24,7 @@ pthread_t *thread1, *thread2;
 int responseController = 0;
 Controller control;
 PlanManager PM;
+bool mode=false; // 'false' pour follower et 'true' pour leader
 QueuingPort* channelController; 	// Client_PM vers controller
 QueuingPort* channelSM; 		// Client_PM vers com ground / SM
 QueuingPort* channelReceptionPM; 	// Server_PM
@@ -35,16 +36,9 @@ void * Server_PM(void *args)
 
 	int x=0;
 
-	char s[100];
 	PlanFilePath* f;
-
-	if (gethostname(s, 100) != 0)
-	{
-	    perror("S-> gethostname");
-	    exit(1);
-	}
-
-	cout << "Host name " << s << endl;
+	Status* s;
+	ModeStruct* m;
 
 	channelReceptionPM->Display();
 
@@ -54,22 +48,29 @@ void * Server_PM(void *args)
 	while(1)
 	{
 		channelReceptionPM->RecvQueuingMsg(buffer);
-		f = (PlanFilePath*)buffer;
+		s = (Status*)buffer;
 
-		if(f->code == 3)
+		if(s->code == 3)
 		{
 			// ARRIVE de COM
+			f=(PlanFilePath*)buffer;
 			cout<<"Msg("<<x++<<"):  path ="<<f->filepath<<endl;
 			PM.generatePlan(f->filepath);
 		}
+
+		else if(s->code == 6)
+		{
+			// ARRIVE de FDIR
+			m = (ModeStruct*)buffer;
+			mode = m->rpiMode;
+		}
+
+		usleep(100);
 	}
 
 	cout << "Terminaison du Thread " << tid_FD << endl;
 	return NULL;
 }
-
-bool mode; // 'false' pour follower et 'true' pour leader
-// En pratique, le mode devra aussi être envoyé au ComGroundManager
 
 void before()
 {

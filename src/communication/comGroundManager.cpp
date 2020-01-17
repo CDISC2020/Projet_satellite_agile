@@ -31,7 +31,7 @@ PlanFilePath *imageName;
 string imageList[128];
 int ptImageReceived = 0;
 int ptImageSent = 0;
-bool mode = true; // Mode slave;
+bool mode = false; // Mode slave;
 char s[100];
 
 char buffer[1024];
@@ -173,6 +173,8 @@ void* Communic_Interne(void* argv)
 			m = (ModeStruct*)buffer;
 			mode = m->rpiMode;
 		}
+
+		usleep(100);
 	}
 
 	return NULL;
