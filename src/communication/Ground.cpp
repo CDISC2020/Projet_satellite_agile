@@ -46,7 +46,6 @@ int main (int argc,char* argv[])
 		if (c == 'p')	// Envoi d'un plan
 		{
 			cout << "What is the plan name ? (end it by '.txt'" << endl;
-			p.code = 5;
 			scanf("%11s[^\n]", p.name);
 			cout << "Sending Plan..." << endl;
 			sprintf(cmde, "sh src/communication/uploadGtoS.sh %s", p.name);
@@ -57,8 +56,6 @@ int main (int argc,char* argv[])
 		}
 		else if (c=='r')  // Demande des photos
 		{
-			p.code = 10;
-
 			sprintf(cmde, "sh src/communication/uploadGtoS.sh %s", "demande_imgs.txt");
 			printf("demande image envoyee");
 			system(cmde);
