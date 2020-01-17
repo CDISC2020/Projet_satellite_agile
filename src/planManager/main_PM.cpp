@@ -28,6 +28,7 @@ bool mode=false; // 'false' pour follower et 'true' pour leader
 QueuingPort* channelController; 	// Client_PM vers controller
 QueuingPort* channelSM; 		// Client_PM vers com ground / SM
 QueuingPort* channelReceptionPM; 	// Server_PM
+pthread_mutex_t* mu=new pthread_mutex_t();  // Mutex sur la gestion des plans
 
 void * Server_PM(void *args)
 {
@@ -64,6 +65,15 @@ void * Server_PM(void *args)
 			m = (ModeStruct*)buffer;
 			mode = m->rpiMode;
 		}
+        else if (f->code == 17)
+                {
+                    cout<<"Msg("<<x++<<"):  path ="<<f->filepath<<endl;
+
+                    pthread_mutex_lock(mu);              // verrouiller la ressource partagé
+                    PM.destructPlans()
+                    pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
+                    PM.generatePlan(f->filepath);
+                }
 
 		usleep(100);
 	}
@@ -81,8 +91,10 @@ void proceed()
 {
 // Fonctionnement normal
 	sleep(1);
+	pthread_mutex_lock(mu);              // verrouiller la ressource partagé
 	cout << "Fonctionnement" << endl;
-	PM.executePlan(&control, &responseController,channelSM, mode);
+	PM.executePlan(channelController, &responseController,channelSM );
+	pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
 }
 
 sig_t bye()
@@ -94,6 +106,9 @@ sig_t bye()
 void after()
 {
 	// .... do nothing, mais peut-être que c'est la qu'il faut dire à la safety qu'one est vivant ?
+	//str[100]='C' si vous êtes sur la Com, ='P' si vous êtes sur le plan
+	char str[100]="P";
+	channelFDIR.SendQueuingMsg(str, sizeof(str));
 }
 
 void * Client_PM(void *args)
@@ -105,6 +120,7 @@ void * Client_PM(void *args)
 		before();
 		proceed();
 		after();
+		usleep(5000);
 	}
 
 	return NULL;
@@ -132,9 +148,12 @@ int  main (int argc,char* argv[])
 
 	cout << "Host name " << s << endl;
 
-	channelController = new QueuingPort(0, 18002, argv[1]); 	// Client_PM vers controller
 	channelSM = new QueuingPort(0, 18003, argv[1]); 		// Client_PM vers com ground / SM
 	channelReceptionPM = new QueuingPort(1, 18001, s); 		// Server_PM
+	QueuingPort channelFDIR(0, 18002, argv[1]);
+	channelFDIR.Display();//quelques info sur l'ouverture du socket
+
+
 
 	// generate thread
 	pthread_attr_t *thread_attributes;

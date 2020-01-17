@@ -19,7 +19,6 @@
 #include "Controller.h"
 #include "../ARINC/ARINC_Com.h"
 #include "../communication/statusManager.h"
-#include "../FDIR/FDIR.h"
 
 #define PLANS_BUFFER_SIZE 2
 
@@ -37,8 +36,13 @@ struct PlanFilePath {
 	char filepath[64];
 };
 
+typedef struct ModeStruct ModeStruct;
+struct ModeStruct {
+	int code;
+	bool rpiMode;
+};
 
-class PlanManager 
+class PlanManager
 {
 protected:
 	Plan Plans[PLANS_BUFFER_SIZE];
@@ -53,6 +57,7 @@ public:
 	void generatePlan(const char*);
 	void printPlan(int indexPlan);
 	void pushBan(int index);
+	void destructPlans();
 };
 
 #endif
