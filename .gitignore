@@ -8,6 +8,7 @@ main_Ground
 listpid
 LogErreur.txt
 demande_imgs.txt
+src/planManager/plans/plan.txt
 
 # Prerequisites
 *.d

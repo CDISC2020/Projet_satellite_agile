@@ -39,26 +39,39 @@ int main (int argc,char* argv[])
 	while (1)
 	{
 		cout << "What do you want to do ?"<< endl;
-		cout << "('p' to send a plan ; 'r' to receive the photos)" << endl;
+		cout << "'p' to send a plan\n" << "'c' to send a commande\n" << "'r' to receive the photos\n" << endl;
 		char c;
 		scanf(" %c", &c);
 
 		if (c == 'p')	// Envoi d'un plan
 		{
-			cout << "What is the plan name ? (end it by '.txt'" << endl;
+			cout << "What is the plan name ? (end it by '.txt')" << endl;
 			scanf("%11s[^\n]", p.name);
 			cout << "Sending Plan..." << endl;
-			sprintf(cmde, "sh src/communication/uploadGtoS.sh %s", p.name);
+			sprintf(cmde, "sh src/communication/uploadGtoSplans.sh %s", p.name);
 			system(cmde);
 			sleep(2);
 
 			cout << "Plan sent !" << endl;
 		}
+
+		else if (c=='c')  // Envoi d'une commande
+		{
+			cout << "What is the commande name ? (end it by '.txt')" << endl;
+			scanf("%11s[^\n]", p.name);
+			cout << "Sending Commande..." << endl;
+			sprintf(cmde, "sh src/communication/uploadGtoStm.sh %s", p.name);
+			system(cmde);
+			sleep(2);
+
+			cout << "Commande sent !" << endl;
+		}
+
 		else if (c=='r')  // Demande des photos
 		{
-			sprintf(cmde, "sh src/communication/uploadGtoS.sh %s", "demande_imgs.txt");
-			printf("demande image envoyee");
+			sprintf(cmde, "sh src/communication/uploadGtoSplans.sh %s", "demande_imgs.txt");
 			system(cmde);
+			printf("Demande image envoyée");
 			cout << "Receiving the images..." << endl;
 			sleep(2);
 		}

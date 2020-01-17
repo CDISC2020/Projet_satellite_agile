@@ -58,16 +58,22 @@ int getdir (string dir, vector<string> &files)
 }
 
 /*---------------------------------COMMUNICATION AU SOL--------------------------------------*/
-void* Communic_Sol(void *args)
+void* Communic_Sol(void* args)
 {
+	char* args_char = static_cast<char*>(args);
+	QueuingPort channelOutPM(0, 18001, args_char); 	// Client PM
+	channelOutPM.Display();
+
 	PlanFilePath pfp;
 
-	string dir = string(".");
+	string dir = string("src/communication/planRecuSol");
     	vector<string> files;
 	vector<string>::iterator it;
 
 	ifstream ifile;
 	string name;
+
+
 	while(1)
 	{
 		if(mode == true)
@@ -83,44 +89,49 @@ void* Communic_Sol(void *args)
 
 				//sprintf(cmde, "sh src/communication/uploadStoG.sh, "LogError.txt");
 				//system(cmde);
-
+				ptImageReceived=1;
 				while(ptImageSent != ptImageReceived)
 				{
 					//cout << "boucle \n";
 					// envoyer les images existentes
-					sprintf(cmde, "sh src/communication/uploadStoG.sh %s", imageList[ptImageSent].c_str());
+					sprintf(cmde, "sh src/communication/uploadStoG.sh %s", imageList[ptImageSent].c_str()); 
 					system(cmde);
 					sleep(1);
-					cout << "Img envoyée " << endl;
+					cout << "Img envoyée \n" << endl;
 
 					//enlever du satellite l'image envoyée au sol
 					sprintf(cmde, "rm %s", imageList[ptImageSent].c_str());
 					system(cmde);
-					cout << "Images enlevées" << endl;
+					cout << "Images enlevées\n" << endl;
 
 					ptImageSent = (ptImageSent + 1)%128;
 
 				}// lancer bash qui envoie chaque photo du tableau.
-
-				remove(name.c_str());
+				string rep_demande_img="src/communication/planRecuSol/demande_imgs.txt";
+				sleep(5);
+				remove(rep_demande_img.c_str());
 				cout << "Demande enlevée\n";
+				sleep(5);
 			}
 
 			name="plan.txt";
 			it=find(files.begin(),files.end(),name);
 			if(it!=files.end()) // Si fichier présent dans la liste
 			{
-				// Adapter ici le path du fichier pour l'executer dans la suite
-				// (apres l'avoir déplacé)
-				// if y a un plan
-
 				// deplace dans src/planMagager/planRecu avec system()
-				// sprintf(cmde "mv plan.txt src/planManager/planRecu
-				// system(cmde)
-				/*for (unsigned int i = 0;i < files.size();i++)
-					pfp.filepath[i] = files[i][0];
-				cout << pfp.filepath << "buffer pfp";
-				channelOutPM.SendQueuingMsg((char*)&pfp, sizeof(PlanFilePath));*/
+
+				sprintf(cmde, "mv src/communication/planRecuSol/plan.txt src/planManager/plans");
+				system(cmde);
+				sleep(1);
+				cout << "plan envoyé au PM";
+
+				string c="src/planManager/plans";
+
+				for (unsigned int i = 0;i < c.size(); i++)
+					pfp.filepath[i] = c[i];
+				//cout << pfp.filepath << "buffer pfp";
+
+				channelOutPM.SendQueuingMsg((char*)&pfp, sizeof(PlanFilePath));
 			}
 		}
 
@@ -136,13 +147,9 @@ void* Communic_Sol(void *args)
 /*----------------------------COMMUNICATION INTER-PARTITIONS---------------------------------*/
 void* Communic_Interne(void* argv)
 {
-	char* argv_char = static_cast<char*>(argv);
-
-	QueuingPort channelOutPM(0, 18001, argv_char); 	// Client PM
 	QueuingPort channelIn(1, 18003, s); 		// Server
 
 	channelIn.Display();
-	channelOutPM.Display();
 
 	while(1)
 	{
@@ -225,7 +232,7 @@ int main (int argc, char* argv[])
 	thread=(pthread_t *)malloc(sizeof(pthread_t));
 
 	pthread_attr_init(thread_attributes);
-	if (pthread_create(thread, thread_attributes, &Communic_Sol,(void *) NULL) != 0)
+	if (pthread_create(thread, thread_attributes, &Communic_Sol,(void *) argv_void) != 0)
 		perror ("Thread_Server-> Failure detector thread pb!");
 
 	/* creation du thread processus communication interne */
@@ -235,7 +242,7 @@ int main (int argc, char* argv[])
 	thread=(pthread_t *)malloc(sizeof(pthread_t));
 
 	pthread_attr_init(thread_attributes);
-	if (pthread_create(thread, thread_attributes, &Communic_Interne, (void *) argv_void) != 0)
+	if (pthread_create(thread, thread_attributes, &Communic_Interne, (void *) NULL) != 0)
 		perror ("Thread_Server-> Image mgt thread pb!");
 
 	while (1) {usleep(100);}  /* DOES NOTHING */ ;
