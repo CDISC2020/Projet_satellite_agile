@@ -6,10 +6,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
-//#include <conio.h>
 #include <unistd.h>
 #include <fstream>
-#include <linux/inotify.h>
 #include <pthread.h>
 #include <dirent.h>
 #include <vector>
@@ -20,6 +18,7 @@ using namespace std;
 #include "../ARINC/ARINC_Com.h"
 #include "statusManager.h"
 #include "../planManager/planManager.h"
+#include "../FDIR/FDIR.h"
 
 /*-------------------------------VARIABLES--------------------------------------*/
 int tid_sol, tid_interne;

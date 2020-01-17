@@ -1,9 +1,17 @@
+#ifndef DEF_FDIR
+#define DEF_FDIR
+
 #include "WatchdogInterne.h"
 #include "watchdog_arduino.h"
 #include "../GPIO.h"
 
 using namespace std;
 
+typedef struct ModeStruct ModeStruct;
+struct ModeStruct {
+	int code;
+	bool rpiMode;
+};
 
 class FDIR
 {
@@ -40,3 +48,4 @@ class FDIR
 		bool isleader();
 };
 
+#endif

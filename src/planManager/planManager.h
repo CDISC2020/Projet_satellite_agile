@@ -19,6 +19,7 @@
 #include "Controller.h"
 #include "../ARINC/ARINC_Com.h"
 #include "../communication/statusManager.h"
+#include "../FDIR/FDIR.h"
 
 #define PLANS_BUFFER_SIZE 2
 
@@ -36,11 +37,6 @@ struct PlanFilePath {
 	char filepath[64];
 };
 
-typedef struct ModeStruct ModeStruct;
-struct ModeStruct {
-	int code;
-	bool rpiMode;
-};
 
 class PlanManager 
 {

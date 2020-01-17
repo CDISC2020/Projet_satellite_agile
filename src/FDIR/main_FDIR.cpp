@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "FDIR.h"
+#include "FDIR.h" 
 
 using namespace std;
 
@@ -51,6 +51,17 @@ int  main (int argc,char* argv[])
         if (pthread_create(thread, thread_attributes, gestion_wd_arduino,(void *) NULL) != 0)
                 perror ("Thread_Server-> Failure detector thread pb!");
 
+	sleep(2);
+
+	ModeStruct mode;
+	mode.code=6;
+	mode.rpiMode=myFDIR.isleader();
+
+	QueuingPort channelPM(0, 18001, argv[1]);
+        channelPM.SendQueuingMsg((char*)&mode, sizeof(ModeStruct));
+
+	QueuingPort channelCom(0, 18003, argv[1]);
+        channelCom.SendQueuingMsg((char*)&mode, sizeof(ModeStruct));
 
 	cout << "bonjour je suis le main_FDIR \n" << endl;
 
@@ -66,9 +77,7 @@ int  main (int argc,char* argv[])
 
 	QueuingPort channel(1, 18002, s); // Server
 
-	channel.Display();
-
- 	
+	channel.Display();	
 
 	char buffer[100];
 	
