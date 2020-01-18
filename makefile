@@ -132,3 +132,9 @@ reset:
 	find src/communication/planRecuSol -name "[!.]*" -type f -delete
 	find src/communication/tmRecuSol -name "[!.]*" -type f -delete
  
+touch:
+	touch makefile
+	touch src/communication/*
+	touch src/planManager/*
+	touch src/FDIR/*
+	touch src/ARINC/*
