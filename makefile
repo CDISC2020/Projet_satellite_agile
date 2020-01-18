@@ -3,6 +3,7 @@
 
 # CONSTANTES
 CC = g++ -Wall -std=c++11
+
 THREAD = -lpthread -pthread
 MAKE = make
 
@@ -126,3 +127,8 @@ reset:
 	find . -name "a.out" -type f -delete
 	find . -name "listpid" -type f -delete
 	find . -name "LogError.txt" -type f -delete
+	find src/planManager/plans/ -name "[!.]*" -type f -delete
+	find src/planManager/tm/ -name "[!.]*" -type f -delete
+	find src/communication/planRecuSol -name "[!.]*" -type f -delete
+	find src/communication/tmRecuSol -name "[!.]*" -type f -delete
+ 
