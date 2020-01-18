@@ -116,8 +116,8 @@ int QueuingPort::SendQueuingMsg (char* s_t, int ls_t) {
                         perror("C-> sendto");
                         bye(s_d);
                         }
-                else
-                        cout << "C-> Number of char sent = " << nbeff << endl;
+//                else
+//                        cout << "C-> Number of char sent = " << nbeff << endl;
                 return(nbeff); // returns the number of char effectively sent
         };
 

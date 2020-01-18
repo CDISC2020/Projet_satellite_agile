@@ -142,7 +142,6 @@ void* Communic_Sol(void* args)
 				cout << "Plan envoyé au PM\n";
 
 				sprintf(pfp_plan.filepath, "%s%s", c_plan.c_str(), name_plan.c_str());
-				cout << "filepath=" << pfp_plan.filepath << endl;
 				
 				channelOutPM.SendQueuingMsg((char*)&pfp_plan, sizeof(PlanFilePath));
 			}
