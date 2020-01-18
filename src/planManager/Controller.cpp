@@ -8,7 +8,7 @@ Controller::Controller()
 	sc.returnControl=true;
 }
 
-void Controller::executeInstruction(GenericInstruction* instruction, int* responseController, QueuingPort* ChannelErreur, Plan* P, int ptInstruction)
+void Controller::executeInstruction(GenericInstruction* instruction, int* responseController)
 {
 	if(instruction->getType() == 'p')
 	{
@@ -47,15 +47,5 @@ void Controller::executeInstruction(GenericInstruction* instruction, int* respon
 			*responseController=1;
 		else
 			*responseController=-1;
-	}
-
-	else
-	{
-		Status S;
-		S.code = 4;
-		S.errorID = 2; // A changer.
-		sprintf(S.description, "Wrong instruction type, instruction #%d : group : #%d ", ptInstruction+1,  instruction->getIndex());
-
-		ChannelErreur->SendQueuingMsg((char*)&S, sizeof(Status));
 	}
 }

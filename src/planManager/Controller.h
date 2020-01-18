@@ -11,7 +11,6 @@
 
 using namespace std;
 
-#include "../ARINC/ARINC_Com.h"
 #include "plan.h"
 #include "genericInstruction.h"
 #include "cameraController.h"   
@@ -30,7 +29,7 @@ protected:
 
 public:
 	Controller();
-	void executeInstruction(GenericInstruction* instruction, int* responseController, QueuingPort* ChannelErreur, Plan* P, int ptInstruction);
+	void executeInstruction(GenericInstruction* instruction, int* responseController);
 };
 
 #endif

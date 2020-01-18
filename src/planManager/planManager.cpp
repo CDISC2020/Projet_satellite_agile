@@ -9,7 +9,7 @@ PlanManager::PlanManager()
 	responseController=0;
 }
 
-void PlanManager::executePlan(Controller* control,QueuingPort* ChannelErreur, bool mode)
+void PlanManager::executePlan(Controller* control,QueuingPort* ChannelCom, bool mode)
 {
 	if(plan!=NULL)
 	{
@@ -22,6 +22,7 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelErreur, bo
 
 		time_t t = time(0);
 		struct tm * now = localtime(&t);
+		cout << "Inst " << ptInstruction+1 << "/" << plan->getnInstructions() << endl;
 		cout << "now         = " << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec << endl;
 		cout << "Instruction = " << currentInst->getHour() << ":" << currentInst->getMin() << ":" << currentInst->getSec() << endl;
 
@@ -48,19 +49,20 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelErreur, bo
 				{
 					cout << "control EXECUTE!" << endl;
 					if(mode)
-						control->executeInstruction(currentInst, &responseController, ChannelErreur, plan, ptInstruction);
+						control->executeInstruction(currentInst, &responseController);
 					else
 						responseController=1;
 					start_timeout = true;
 				}
 				else
 				{
+					cout << "hum probleme" << endl;
 					Status S;
 					S.code = 4;
 					S.errorID = 2; // A changer.
 					sprintf(S.description, "Wrong instruction type, instruction #%d : group #%d ", ptInstruction+1,  group);
 
-					ChannelErreur->SendQueuingMsg((char*)&S, sizeof(Status));
+					ChannelCom->SendQueuingMsg((char*)&S, sizeof(Status));
 				}
 				/*---------------------------------------------------------*/
 
@@ -101,7 +103,7 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelErreur, bo
 
 						cout << S_controller.description << endl;
 
-						ChannelErreur->SendQueuingMsg((char*)&S_controller, sizeof(Status));
+						ChannelCom->SendQueuingMsg((char*)&S_controller, sizeof(Status));
 					}
 					if (time_out == 0)
 					{
@@ -119,7 +121,7 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelErreur, bo
 					string aux =  ((PhotoInstruction*)currentInst)->getPhotoName();
 					strcpy (PhotoPath.filepath , aux.c_str()) ;
 					printf("Sending the photo %s \n", PhotoPath.filepath);
-					ChannelErreur->SendQueuingMsg((char*)&PhotoPath, sizeof(PlanFilePath));
+					ChannelCom->SendQueuingMsg((char*)&PhotoPath, sizeof(PlanFilePath));
 				}
 				/*-------------------------------------------------------------------*/
 
@@ -137,7 +139,7 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelErreur, bo
 				Status S_heure;
 				S_heure.code = 4;
 				S_heure.errorID = 3;
-				ChannelErreur->SendQueuingMsg((char*)&S_heure, sizeof(Status));
+				ChannelCom->SendQueuingMsg((char*)&S_heure, sizeof(Status));
 
 				ptInstruction++;
 			}
@@ -150,7 +152,10 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelErreur, bo
 
 
 		if (ptInstruction >= plan->getnInstructions()) // Fin d'un plan d'instruction, on efface le plan en cours
+		{
+			cout << "Le plan est terminé" << endl;
 			this->destructPlan();
+		}
 	}
 
 	else
@@ -184,9 +189,10 @@ void PlanManager::pushBan(int index)
 
 void PlanManager::destructPlan()
 {
-	ptInstruction = 0;
 	if(plan!=NULL)
 		delete plan;
+	plan=NULL;
+	ptInstruction = 0;
 	for (int k=0; k< 100; k++) bannedInstructions[k] = false;
 }
 

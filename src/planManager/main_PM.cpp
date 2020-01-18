@@ -44,8 +44,6 @@ void * Server_PM(void *args)
 	Status* s;
 	ModeStruct* m;
 
-	channelReceptionPM->Display();
-
 	char buffer[1024];
 	int i; for(i=0; i>1024; i++) buffer[i] = '\0';
 
@@ -113,7 +111,7 @@ void before()
 void proceed()
 {
 	// Fonctionnement normal
-	cout << "Fonctionnement" << endl;
+	cout << endl << "Fonctionnement" << endl;
 	pthread_mutex_lock(mu);              // verrouiller la ressource partagé
 	PM.executePlan(&control, channelSM, mode);
 	pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
