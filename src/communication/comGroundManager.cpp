@@ -35,7 +35,6 @@ bool mode = true; // Mode slave;
 char s[100];
 
 char buffer[1024];
-char bufferFDIR[1024];
 char cmde[100];
 
 int wtc = 0;
@@ -61,42 +60,37 @@ int getdir (string dir, vector<string> &files)
     return 0;
 }
 
+
 /*---------------------------------COMMUNICATION AU SOL--------------------------------------*/
 void* Communic_Sol(void* args)
 {
-	char* args_char = static_cast<char*>(args);
-	QueuingPort channelOutPM(0, 18001, args_char); 	// Client PM
+	QueuingPort channelOutPM(0, 18001, s); 	// Client PM
 	channelOutPM.Display();
 
-	PlanFilePath pfp_plan, pfp_tm;
-
-	string dir_plan = string("src/communication/planRecuSol");
-	string dir_tm = string("src/communication/tmRecuSol");
     	vector<string> files, tms;
-	vector<string>::iterator it, it_plan, it_tm;
-
+	vector<string>::iterator it;
 	ifstream ifile;
+
+	PlanFilePath pfp_plan, pfp_tm;
+	pfp_plan.code = 3;
+	pfp_tm.code = 4;
+
+	// Modifiable ici
+	string dir_plan = string("src/communication/planRecuSol/");
+	string dir_tm = string("src/communication/tmRecuSol/");
+
 	string name_dem = "demande_imgs.txt";
 	string name_plan = "plan.txt";
 	string name_tm = "tm.txt";
 
-	pfp_plan.code = 3;
-	string c_plan = "src/planManager/plans";
-	for (unsigned int i = 0;i < c_plan.size(); i++)
-		pfp_plan.filepath[i] = c_plan[i];
-
-	pfp_tm.code = 4;
-	string c_tm = "src/planManager/tm";
-	for (unsigned int i = 0;i < c_tm.size(); i++)
-		pfp_tm.filepath[i] = c_tm[i];
-
+	string c_plan = "src/planManager/plans/";
+	string c_tm = "src/planManager/tm/";
+	
 	while(1)
 	{
 		if(mode == true)
 		{
 			files.clear();
-			tms.clear();
-
     			getdir(dir_plan,files);	
 
 			/*****************************[ CGM ---IMGS---> SOL ]**********************************/
@@ -108,7 +102,6 @@ void* Communic_Sol(void* args)
 				sprintf(cmde, "sh src/communication/uploadStoG.sh LogError.txt");
 				system(cmde);
 
-				//ptImageReceived=1;
 				while(ptImageSent != ptImageReceived)
 				{
 					//cout << "boucle \n";
@@ -126,7 +119,7 @@ void* Communic_Sol(void* args)
 					ptImageSent = (ptImageSent + 1)%128;
 
 				}// lancer bash qui envoie chaque photo du tableau.
-				string rep_demande_img="src/communication/planRecuSol/demande_imgs.txt";
+				string rep_demande_img= dir_plan + name_dem;
 				sleep(5);
 				remove(rep_demande_img.c_str());
 				cout << "Demande enlevée\n";
@@ -134,30 +127,34 @@ void* Communic_Sol(void* args)
 			}
 			
 			/*****************************[ CGM ---PLAN---> PM ]**********************************/
-			it_plan=find(files.begin(),files.end(),name_plan);
-			if(it_plan!=files.end()) // Si fichier présent dans la liste
+			it=find(files.begin(),files.end(),name_plan);
+			if(it!=files.end()) // Si fichier présent dans la liste
 			{
 				// deplace dans src/planMagager/plans avec system()
 
-				sprintf(cmde, "mv src/communication/planRecuSol/plan.txt src/planManager/plans");
+				sprintf(cmde, "mv %s%s %s", dir_plan.c_str(), name_plan.c_str(), c_plan.c_str());
 				system(cmde);
 				sleep(1);
 				cout << "Plan envoyé au PM\n";
+
+				sprintf(pfp_plan.filepath, "%s%s", c_plan.c_str(), name_plan.c_str());
 				
 				channelOutPM.SendQueuingMsg((char*)&pfp_plan, sizeof(PlanFilePath));
 			}
 
 			/*****************************[ CGM ---TM---> PM ]**********************************/
     			getdir(dir_tm,tms);			
-			it_tm=find(tms.begin(),tms.end(),name_tm);
-			if(it_tm!=tms.end()) // Si fichier présent dans la liste
+			it=find(tms.begin(),tms.end(),name_tm);
+			if(it!=tms.end()) // Si fichier présent dans la liste
 			{
 				// deplace dans src/planMagager/tm avec system()
 
-				sprintf(cmde, "mv src/communication/tmRecuSol/tm.txt src/planManager/tm");
+				sprintf(cmde, "mv %s%s %s", dir_tm.c_str(), name_tm.c_str(), c_tm.c_str());
 				system(cmde);
 				sleep(1);
 				cout << "TM envoyé au PM\n";
+
+				sprintf(pfp_tm.filepath, "%s%s", c_tm.c_str(), name_tm.c_str());
 
 				channelOutPM.SendQueuingMsg((char*)&pfp_tm, sizeof(PlanFilePath));
 			}
@@ -211,7 +208,7 @@ void* Communic_Interne(void* argv)
 		// changement mode primary ou backup
 		else if(statusFDIR->code == 6)
 		{
-			m = (ModeStruct*)bufferFDIR;
+			m = (ModeStruct*)buffer;
 			mode = m->rpiMode;
 		}
 
@@ -226,8 +223,7 @@ void* am_alive(void* argv)
 {
 	sleep(3);	
 
-	char* argv_char = static_cast<char*>(argv);
-	QueuingPort channelFDIR(0, 18002, argv_char);
+	QueuingPort channelFDIR(0, 18002, s);
 
 	channelFDIR.Display(); //quelques info sur l'ouverture du socket
 	char str[100]="C";
@@ -244,6 +240,7 @@ void* am_alive(void* argv)
 		usleep(20*1000); //20 ms
 	}
 }
+
 
 /*---------------------------------BYYYE--------------------------------------*/
 sig_t bye()
@@ -268,11 +265,7 @@ int main (int argc, char* argv[])
 		perror("S-> gethostname");
 		exit(1);
 	}
-
 	cout << "Host name " << s << endl;
-
-	// Cast des arguments pour les envoyer aux threads
-	void *argv_void = static_cast<void*>(argv[1]);
 
 	// Init des tableaux
 	for(int i=0; i<1024; i++) buffer[i]='\0';
@@ -286,17 +279,17 @@ int main (int argc, char* argv[])
 	pthread_attr_t *thread_attributes;
 	pthread_t *thread;
 
-	/* creation du thread processus communication au sol */
+/////////* creation du thread processus communication au sol */
 	tid_sol = 1;
 
 	thread_attributes=(pthread_attr_t *)malloc(sizeof(pthread_attr_t));
 	thread=(pthread_t *)malloc(sizeof(pthread_t));
 
 	pthread_attr_init(thread_attributes);
-	if (pthread_create(thread, thread_attributes, &Communic_Sol,(void *) argv_void) != 0)
+	if (pthread_create(thread, thread_attributes, &Communic_Sol, (void*) NULL) != 0)
 		perror ("Thread_Server-> Communication au sol error!");
 
-	/* creation du thread processus communication interne */
+/////////* creation du thread processus communication interne */
 	tid_interne=2;
 
 	thread_attributes=(pthread_attr_t *)malloc(sizeof(pthread_attr_t));
@@ -306,14 +299,14 @@ int main (int argc, char* argv[])
 	if (pthread_create(thread, thread_attributes, &Communic_Interne, (void *) NULL) != 0)
 		perror ("Thread_Server-> Communication interne error!");
 
-	/* creation du thread processus I'm alive */
+/////////* creation du thread processus I'm alive */
 	tid_alive=3;
 
 	thread_attributes=(pthread_attr_t *)malloc(sizeof(pthread_attr_t));
 	thread=(pthread_t *)malloc(sizeof(pthread_t));
 
 	pthread_attr_init(thread_attributes);
-	if (pthread_create(thread, thread_attributes, &am_alive, (void *)  argv_void) != 0)
+	if (pthread_create(thread, thread_attributes, &am_alive, (void *)  NULL) != 0)
 		perror ("Thread_Server-> I am alive error!");
 
 	while (1) {usleep(100);}  /* DOES NOTHING */ ;

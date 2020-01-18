@@ -6,8 +6,6 @@
 
 using namespace std;
 
-#include "../planManager/planManager.h"
-
 int main (int argc,char* argv[])
 {
 	if (argc!=2)
@@ -20,18 +18,12 @@ int main (int argc,char* argv[])
 
 	char s[100];
 	char cmde[100];
-	for(int i=0; i<100; i++)
-		cmde[i]=' ';
-	PlanName p;
+	char name[8];
 
 	if (gethostname(s, 100) != 0) {
 		perror("S-> gethostname");
 		exit(1);
 	}
-
-	QueuingPort channelOut(0, 18003, argv[1]); 	//Client
-
-	channelOut.Display();
 
 	cout << "Host name " << argv[1] << endl;
 	cout << "Welcome to the Ground Station, what do you want to do ?" << endl;
@@ -46,9 +38,9 @@ int main (int argc,char* argv[])
 		if (c == 'p')	// Envoi d'un plan
 		{
 			cout << "What is the plan name ? (end it by '.txt')" << endl;
-			scanf("%11s[^\n]", p.name);
+			scanf("%8s[^\n]", name);
 			cout << "Sending Plan..." << endl;
-			sprintf(cmde, "sh src/communication/uploadGtoSplans.sh %s", p.name);
+			sprintf(cmde, "sh ../src/communication/uploadGtoSplans.sh %s", name);
 			system(cmde);
 			sleep(2);
 
@@ -58,9 +50,9 @@ int main (int argc,char* argv[])
 		else if (c=='c')  // Envoi d'une commande
 		{
 			cout << "What is the commande name ? (end it by '.txt')" << endl;
-			scanf("%11s[^\n]", p.name);
+			scanf("%8s[^\n]", name);
 			cout << "Sending Commande..." << endl;
-			sprintf(cmde, "sh src/communication/uploadGtoStm.sh %s", p.name);
+			sprintf(cmde, "sh ../src/communication/uploadGtoStm.sh %s", name);
 			system(cmde);
 			sleep(2);
 
@@ -69,7 +61,7 @@ int main (int argc,char* argv[])
 
 		else if (c=='r')  // Demande des photos
 		{
-			sprintf(cmde, "sh src/communication/uploadGtoSplans.sh %s", "demande_imgs.txt");
+			sprintf(cmde, "sh ../src/communication/uploadGtoSplans.sh %s", "demande_imgs.txt");
 			system(cmde);
 			printf("Demande image envoyée");
 			cout << "Receiving the images..." << endl;

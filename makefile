@@ -11,10 +11,13 @@ ARINC = src/ARINC/
 # GPIO directory
 GPIO = src/
 
+# Ground directory
+GROUND = Ground/
+
 # Partition directories
-WP_PLAN = src/planManager/
-WP_COM = src/communication/
-WP_FDIR = src/FDIR/
+PLAN = src/planManager/
+COM = src/communication/
+FDIR = src/FDIR/
 
 all:
 	$(MAKE) clean
@@ -44,38 +47,38 @@ all:
 ARINC_Com:  $(ARINC)ARINC_Com.cpp $(ARINC)ARINC_Com.h
 	$(CC) -c $(ARINC)ARINC_Com.cpp $(ARINC)ARINC_Com.h
 
-genericInstruction: $(WP_PLAN)genericInstruction.cpp $(WP_PLAN)genericInstruction.h
-	$(CC) -c $(WP_PLAN)genericInstruction.cpp $(WP_PLAN)genericInstruction.h
+genericInstruction: $(PLAN)genericInstruction.cpp $(PLAN)genericInstruction.h
+	$(CC) -c $(PLAN)genericInstruction.cpp $(PLAN)genericInstruction.h
 
-plan: $(WP_PLAN)plan.cpp $(WP_PLAN)plan.h
-	$(CC) -c $(WP_PLAN)plan.cpp $(WP_PLAN)plan.h
+plan: $(PLAN)plan.cpp $(PLAN)plan.h
+	$(CC) -c $(PLAN)plan.cpp $(PLAN)plan.h
 
-planManager: $(WP_PLAN)planManager.cpp $(WP_PLAN)planManager.h $(WP_PLAN)main_PM.cpp $(WP_FDIR)FDIR.h
-	$(CC) -c $(WP_PLAN)planManager.cpp $(WP_PLAN)planManager.h $(WP_PLAN)main_PM.cpp $(WP_FDIR)FDIR.h
+planManager: $(PLAN)planManager.cpp $(PLAN)planManager.h $(PLAN)main_PM.cpp $(FDIR)FDIR.h
+	$(CC) -c $(PLAN)planManager.cpp $(PLAN)planManager.h $(PLAN)main_PM.cpp $(FDIR)FDIR.h
 
-comGroundManager: $(WP_COM)comGroundManager.cpp $(WP_FDIR)FDIR.h
-	$(CC) -c $(WP_COM)comGroundManager.cpp $(WP_FDIR)FDIR.h
+comGroundManager: $(COM)comGroundManager.cpp $(FDIR)FDIR.h
+	$(CC) -c $(COM)comGroundManager.cpp $(FDIR)FDIR.h
 
-statusManager:  $(WP_COM)statusManager.cpp $(WP_COM)statusManager.h
-	$(CC) -c $(WP_COM)statusManager.cpp $(WP_COM)statusManager.h
+statusManager:  $(COM)statusManager.cpp $(COM)statusManager.h
+	$(CC) -c $(COM)statusManager.cpp $(COM)statusManager.h
 
-ground: $(WP_COM)Ground.cpp
-	$(CC) -c $(WP_COM)Ground.cpp
+ground: $(COM)Ground.cpp
+	$(CC) -c $(COM)Ground.cpp
 
-attitudeController:  $(WP_PLAN)attitudeController.cpp $(WP_PLAN)attitudeController.h
-	$(CC) -c $(WP_PLAN)attitudeController.cpp $(WP_PLAN)attitudeController.h
+attitudeController:  $(PLAN)attitudeController.cpp $(PLAN)attitudeController.h
+	$(CC) -c $(PLAN)attitudeController.cpp $(PLAN)attitudeController.h
 
-cameraController:  $(WP_PLAN)cameraController.cpp $(WP_PLAN)cameraController.h
-	$(CC) -c $(WP_PLAN)cameraController.cpp $(WP_PLAN)cameraController.h
+cameraController:  $(PLAN)cameraController.cpp $(PLAN)cameraController.h
+	$(CC) -c $(PLAN)cameraController.cpp $(PLAN)cameraController.h
 
-controller: $(WP_PLAN)Controller.cpp $(WP_PLAN)Controller.h
-	$(CC) -c $(WP_PLAN)Controller.cpp $(WP_PLAN)Controller.h
+controller: $(PLAN)Controller.cpp $(PLAN)Controller.h
+	$(CC) -c $(PLAN)Controller.cpp $(PLAN)Controller.h
 
 gpio : $(GPIO)GPIO.cpp $(GPIO)GPIO.h
 	$(CC) -c $(GPIO)GPIO.cpp $(GPIO)GPIO.h
 
-fdir: $(WP_FDIR)FDIR.cpp $(WP_FDIR)FDIR.h $(WP_FDIR)watchdog_arduino.cpp $(WP_FDIR)watchdog_arduino.h $(WP_FDIR)WatchdogInterne.cpp $(WP_FDIR)WatchdogInterne.h $(WP_FDIR)main_FDIR.cpp
-	$(CC) -c $(WP_FDIR)FDIR.cpp $(WP_FDIR)FDIR.h $(WP_FDIR)watchdog_arduino.cpp $(WP_FDIR)watchdog_arduino.h $(WP_FDIR)WatchdogInterne.cpp $(WP_FDIR)WatchdogInterne.h $(WP_FDIR)main_FDIR.cpp
+fdir: $(FDIR)FDIR.cpp $(FDIR)FDIR.h $(FDIR)watchdog_arduino.cpp $(FDIR)watchdog_arduino.h $(FDIR)WatchdogInterne.cpp $(FDIR)WatchdogInterne.h $(FDIR)main_FDIR.cpp
+	$(CC) -c $(FDIR)FDIR.cpp $(FDIR)FDIR.h $(FDIR)watchdog_arduino.cpp $(FDIR)watchdog_arduino.h $(FDIR)WatchdogInterne.cpp $(FDIR)WatchdogInterne.h $(FDIR)main_FDIR.cpp
 
 
 ############################### LINKAGE ####################################
@@ -95,8 +98,8 @@ main_FDIR: ARINC_Com.o main_FDIR.o FDIR.o WatchdogInterne.o watchdog_arduino.o G
 ######################
 # Station Sol Ground #
 ######################
-main_Ground: ARINC_Com.o Ground.o
-	$(CC) ARINC_Com.o Ground.o -o main_Ground
+main_Ground: Ground.o
+	$(CC) Ground.o -o $(GROUND)main_Ground
 
 ###############
 # Noyau ARINC #

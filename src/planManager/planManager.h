@@ -23,16 +23,18 @@
 
 using namespace std;
 
+#define FILEPATH_SIZE 100
+
 typedef struct PlanName PlanName;
 struct PlanName {
 	int code;
-	char name[11];
+	char name[8]; // plan.txt
 };
 
 typedef struct PlanFilePath PlanFilePath;
 struct PlanFilePath {
 	int code;
-	char filepath[64];
+	char filepath[FILEPATH_SIZE];
 };
 
 class PlanManager
