@@ -18,6 +18,7 @@ using namespace std;
 
 FDIR myFDIR;
 bool set_wd_ard=false;
+char s[100];
  
 void* gestion_wd_arduino(void* args)
 {
@@ -31,16 +32,25 @@ void* gestion_wd_arduino(void* args)
 			usleep(20000);
 			set_wd_ard=false;
 		}
-		
 	}
 
 	return NULL;
 }
 
 
-
 int  main (int argc,char* argv[]) 
 {
+	if (gethostname(s, 100) != 0) 
+	{
+    		perror("S-> gethostname");
+    		exit(1);
+  	}
+	cout << "Host name " << s << endl; 
+
+	QueuingPort channel(1, 18002, s); // Server
+	sleep(500000);
+	channel.Display();	
+
         pthread_attr_t *thread_attributes;
         pthread_t *thread;
 
@@ -63,21 +73,6 @@ int  main (int argc,char* argv[])
 	QueuingPort channelCom(0, 18003, argv[1]);
         channelCom.SendQueuingMsg((char*)&mode, sizeof(ModeStruct));
 
-	cout << "bonjour je suis le main_FDIR \n" << endl;
-
-	char s[100];
-
-	if (gethostname(s, 100) != 0) 
-	{
-    		perror("S-> gethostname");
-    		exit(1);
-  	}
-
-	cout << "Host name " << s << endl; 
-
-	QueuingPort channel(1, 18002, s); // Server
-
-	channel.Display();	
 
 	char buffer[100];
 	
@@ -94,13 +89,9 @@ int  main (int argc,char* argv[])
 		else
 		{
 			if (myFDIR.read_watch_com()==0) // on test si le compteur est a 0
-			{
-				printf("com KC \n");//ça fait trop longtemps qu'on a pas de nouvelles
-			}
+				cout << "com KC" << endl; //ça fait trop longtemps qu'on a pas de nouvelles
 			else
-			{
 				myFDIR.dec_watch_com();// si on a pas de nouvelles, on decremente le compteur
-			}
 		}
 		
 		if (buffer[0]=='P')
@@ -111,25 +102,17 @@ int  main (int argc,char* argv[])
 		else
 		{
 			if (myFDIR.read_watch_plan()==0) // on test si le compteur est a 0
-			{
-				printf("plan KC \n");//ça fait trop longtemps qu'on a pas de nouvelles
-			}
+				cout << "plan KC" << endl; //ça fait trop longtemps qu'on a pas de nouvelles
 			else
-			{
 				myFDIR.dec_watch_plan();// si on a pas de nouvelles, on decremente le compteur
-			}
 		}
 		
-		if(myFDIR.isleader()==false) 
+		if(!myFDIR.isleader())
 		{
 			if (myFDIR.read_arduino()) 
-			{
-				printf("AH, YES, JE VOIS L'ARDUINO \n");
-			}
+				cout << "AH, YES, JE VOIS L'ARDUINO " << endl;
 			else 			
-			{
-				printf("J'AI DUPER LE SIGNAL \n");
-			}
+				cout << "J'AI DUPER LE SIGNAL" << endl;
 		}
 	}
 
