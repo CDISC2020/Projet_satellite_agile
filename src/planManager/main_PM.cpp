@@ -113,6 +113,7 @@ void proceed()
 	pthread_mutex_lock(mu);              // verrouiller la ressource partagé
 	PM.executePlan(&control, &responseController,channelSM,mode);
 	pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
+	sleep(1);
 }
 
 void after()
@@ -142,7 +143,7 @@ void* Alive(void* args)
 	while(1)
 	{	
 		//str[100]='C' si vous êtes sur la Com, ='P' si vous êtes sur le plan
-		char str[100]="P";
+		char str[2]="P";
 		channelFDIR->SendQueuingMsg(str, sizeof(str));
 
 		usleep(10*1000); //10 ms

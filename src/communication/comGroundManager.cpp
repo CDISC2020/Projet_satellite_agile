@@ -229,17 +229,13 @@ void* am_alive(void* args)
 	usleep(500000);
 	channelFDIR.Display();
 
-	char str[100]="C";
+	char str[2]="C";
 	while (1) 
 	{
 		if(wtc == 1)
 		{
 			channelFDIR.SendQueuingMsg(str, sizeof(str));
 			wtc = 0;
-		}
-		else
-		{
-			//cout << "im not alive\n";
 		}
 		usleep(20*1000); //20 ms
 	}
