@@ -47,8 +47,8 @@ void Plan::loadPlan(const char* filepath)
 		cout << "\t File " << filepath<< " opened \n";
 		while(  getline (readFile, planLine) ) 
 		{
-			if (planLine != "\n")
-			{		
+			if (planLine != "\n" && planLine.length()>6)
+			{
 				type = planLine.substr(6,1);
 				
 				if (type == "a")

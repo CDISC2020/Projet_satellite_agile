@@ -6,9 +6,10 @@ PlanManager::PlanManager()
 {
 	plan=NULL;
 	ptInstruction = 0;
+	responseController=0;
 }
 
-void PlanManager::executePlan(Controller* control, int* responseController,QueuingPort* ChannelErreur, bool mode)
+void PlanManager::executePlan(Controller* control,QueuingPort* ChannelErreur, bool mode)
 {
 	if(plan!=NULL)
 	{
@@ -47,9 +48,9 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 				{
 					cout << "control EXECUTE!" << endl;
 					if(mode)
-						control->executeInstruction(currentInst, responseController, ChannelErreur, plan, ptInstruction);
+						control->executeInstruction(currentInst, &responseController, ChannelErreur, plan, ptInstruction);
 					else
-						*responseController=1;
+						responseController=1;
 					start_timeout = true;
 				}
 				else
@@ -67,7 +68,7 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 				int time_out = 1000000;
 				if (start_timeout == true)
 				{
-					while (time_out > 0 && *responseController == 0)
+					while (time_out > 0 && responseController == 0)
 					{
 						usleep(1);
 						time_out--;
@@ -76,10 +77,10 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 				/*-------------------------------------------------------------------*/
 
 				/*--------------------   Management of the errors    ----------------*/
-				if (*responseController != 1)
+				if (responseController != 1)
 				{
 					bannedInstructions[group] = true;
-					if (*responseController == -1)
+					if (responseController == -1)
 					{
 						cout<<"Instruction "<<group<<" banned : error from controller"<<endl;
 						Status S_controller;
@@ -111,7 +112,7 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 				/*-------------------------------------------------------------------*/
 
 				/*-----------------   Photo sending to the ComGrdMnger  -------------*/
-				if ( *responseController == 1  && currentInst->getType() == 'p')
+				if ( responseController == 1  && currentInst->getType() == 'p')
 				{
 					PlanFilePath PhotoPath;
 					PhotoPath.code = 3;
@@ -122,7 +123,7 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 				}
 				/*-------------------------------------------------------------------*/
 
-				*responseController = 0;
+				responseController = 0;
 				ptInstruction++;
 
 
@@ -161,9 +162,9 @@ void PlanManager::generatePlan(const char* filepath)
 	cout << "GENERATE PLAN" << endl;
 
 	string s = filepath;
-
 	plan = new Plan();
 	plan->loadPlan(filepath);
+	ptInstruction=0;
 
 	cout<<"Plan ajouté"<<endl;
 }
@@ -189,9 +190,22 @@ void PlanManager::destructPlan()
 	for (int k=0; k< 100; k++) bannedInstructions[k] = false;
 }
 
-bool PlanManager::planActive()
+Plan* PlanManager::backup()
+{
+	return plan;
+}
+
+int PlanManager::getNInstru()
 {
 	if(plan!=NULL)
-		return true;
-	return false;
+		return plan->getnInstructions();
+	return -1;
+}
+
+void PlanManager::recover(Plan* planBack)
+{
+	plan=planBack;
+	ptInstruction=0;
+	// Le pt va se reactualiser car on va skip les instru dont l'heure est 
+	// déà passé (donc normalement les instru deja executées)
 }

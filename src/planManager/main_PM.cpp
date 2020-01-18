@@ -24,7 +24,6 @@ pthread_t *thread1, *thread2;
 
 PlanManager PM;
 Controller control;
-int responseController = 0;
 
 char s[100];
 
@@ -81,14 +80,19 @@ void * Server_PM(void *args)
 			cout<<"Msg("<<x++<<"):  path ="<<f->filepath<<endl;
 
 			pthread_mutex_lock(mu);              // verrouiller la ressource partagé
-			// Backup plan : Plan plan = PM.backup // ou filepath
-			PM.destructPlan();
-			PM.generatePlan(f->filepath);
-			// N = PM.getNInstru
-			// for i<N
-			// 	executePlan
-			// PM.destruct
-			// PM.recover(plan) // soit recupère current instuction soit (mieux) cherche la premier instruction pas encore passée
+			Plan* planBack = PM.backup();
+			// Si on a bien un plan actif
+			if(planBack!=NULL)	// On charge la telecommande
+				PM.destructPlan();
+			PM.generatePlan(f->filepath); 
+
+			int N =PM.getNInstru(); // On execute la telecommande
+			for(int i=0; i<N; i++)
+				PM.executePlan(&control, channelSM, mode);
+
+			PM.destructPlan();	// On recharge le plan precedent
+			if(planBack!=NULL)
+				PM.recover(planBack);
 			pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
                 }
 
@@ -111,9 +115,9 @@ void proceed()
 	// Fonctionnement normal
 	cout << "Fonctionnement" << endl;
 	pthread_mutex_lock(mu);              // verrouiller la ressource partagé
-	PM.executePlan(&control, &responseController,channelSM,mode);
+	PM.executePlan(&control, channelSM, mode);
 	pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
-	sleep(1);
+	usleep(500000);
 }
 
 void after()

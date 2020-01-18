@@ -28,7 +28,7 @@ using namespace std;
 typedef struct PlanName PlanName;
 struct PlanName {
 	int code;
-	char name[8]; // plan.txt
+	char name[9]; // plan.txt
 };
 
 typedef struct PlanFilePath PlanFilePath;
@@ -41,18 +41,20 @@ class PlanManager
 {
 protected:
 	Plan* plan;
-
 	int ptInstruction;
 	bool bannedInstructions[100]={false};
+	int responseController;
 
 public:
 	PlanManager();
-	void executePlan(Controller* , int *,QueuingPort*, bool);
+	void executePlan(Controller* , QueuingPort*, bool);
 	void generatePlan(const char*);
 	void printPlan();
 	void pushBan(int index);
 	void destructPlan();
-	bool planActive();
+	Plan* backup();
+	int getNInstru();
+	void recover(Plan* planBack);
 };
 
 #endif
