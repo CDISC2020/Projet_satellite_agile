@@ -8,7 +8,12 @@ main_Ground
 listpid
 LogErreur.txt
 demande_imgs.txt
-src/planManager/plans/plan.txt
+src/planManager/plans/*
+src/planManager/tm/*
+src/communication/tmRecuSol/*
+src/communication/planRecuSol/*
+src/communication/toSend/*
+Ground/received/*
 
 # Prerequisites
 *.d

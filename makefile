@@ -2,7 +2,8 @@
 .SUFFIXES : .c .o
 
 # CONSTANTES
-CC = g++ -Wall -std=c++11 -lpthread -pthread
+CC = g++ -Wall -std=c++11
+THREAD = -lpthread -pthread
 MAKE = make
 
 # ARINC directory
@@ -87,13 +88,13 @@ fdir: $(FDIR)FDIR.cpp $(FDIR)FDIR.h $(FDIR)watchdog_arduino.cpp $(FDIR)watchdog_
 # Partitions #
 ##############
 main_PM: ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o main_PM.o Controller.o 
-	$(CC) ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o main_PM.o Controller.o -o main_PM
+	$(CC) $(THREAD) ARINC_Com.o genericInstruction.o plan.o planManager.o statusManager.o attitudeController.o cameraController.o GPIO.o main_PM.o Controller.o -o main_PM
 
 main_com: ARINC_Com.o statusManager.o comGroundManager.o
-	$(CC) ARINC_Com.o statusManager.o comGroundManager.o -o main_Com_ST
+	$(CC) $(THREAD) ARINC_Com.o statusManager.o comGroundManager.o -o main_Com_ST
 
 main_FDIR: ARINC_Com.o main_FDIR.o FDIR.o WatchdogInterne.o watchdog_arduino.o GPIO.o
-	$(CC) ARINC_Com.o main_FDIR.o FDIR.o WatchdogInterne.o watchdog_arduino.o GPIO.o -o main_FDIR
+	$(CC) $(THREAD) ARINC_Com.o main_FDIR.o FDIR.o WatchdogInterne.o watchdog_arduino.o GPIO.o -o main_FDIR
 
 ######################
 # Station Sol Ground #

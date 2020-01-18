@@ -65,6 +65,7 @@ int getdir (string dir, vector<string> &files)
 void* Communic_Sol(void* args)
 {
 	QueuingPort channelOutPM(0, 18001, s); 	// Client PM
+	usleep(500000);
 	channelOutPM.Display();
 
     	vector<string> files, tms;
@@ -75,14 +76,17 @@ void* Communic_Sol(void* args)
 	pfp_plan.code = 3;
 	pfp_tm.code = 4;
 
-	// Modifiable ici
+	// Modifiable
+	// Dossiers reception
 	string dir_plan = string("src/communication/planRecuSol/");
 	string dir_tm = string("src/communication/tmRecuSol/");
 
+	// Fichier a chercher
 	string name_dem = "demande_imgs.txt";
 	string name_plan = "plan.txt";
 	string name_tm = "tm.txt";
 
+	// Dossier une fois traité
 	string c_plan = "src/planManager/plans/";
 	string c_tm = "src/planManager/tm/";
 	
@@ -138,11 +142,13 @@ void* Communic_Sol(void* args)
 				cout << "Plan envoyé au PM\n";
 
 				sprintf(pfp_plan.filepath, "%s%s", c_plan.c_str(), name_plan.c_str());
+				cout << "filepath=" << pfp_plan.filepath << endl;
 				
 				channelOutPM.SendQueuingMsg((char*)&pfp_plan, sizeof(PlanFilePath));
 			}
 
 			/*****************************[ CGM ---TM---> PM ]**********************************/
+			tms.clear();
     			getdir(dir_tm,tms);			
 			it=find(tms.begin(),tms.end(),name_tm);
 			if(it!=tms.end()) // Si fichier présent dans la liste
@@ -173,13 +179,12 @@ void* Communic_Sol(void* args)
 }
 
 /*----------------------------COMMUNICATION AVEC PLAN MANAGER---------------------------------*/
-void* Communic_Interne(void* argv)
+void* Communic_Interne(void* args)
 {
-	sleep(1);	
-	
 	QueuingPort channelIn(1, 18003, s); 		// Server
-
+	usleep(500000);
 	channelIn.Display();
+	usleep(300000);
 
 	while(1)
 	{
@@ -194,7 +199,6 @@ void* Communic_Interne(void* argv)
 			string aux(imageName->filepath);
 			imageList[ptImageReceived] = aux;
 			ptImageReceived = (ptImageReceived + 1)%128;
-			
 		}
 
 		// Plan manager --> Comunication Manager
@@ -219,46 +223,41 @@ void* Communic_Interne(void* argv)
 }
 
 /*---------------------------------ALIVE--------------------------------------*/
-void* am_alive(void* argv)
+void* am_alive(void* args)
 {
-	sleep(3);	
+	QueuingPort channelFDIR(0, 18002, s); // Client FDIR
+	usleep(500000);
+	channelFDIR.Display();
 
-	QueuingPort channelFDIR(0, 18002, s);
-
-	channelFDIR.Display(); //quelques info sur l'ouverture du socket
 	char str[100]="C";
 	while (1) 
 	{
-		if(wtc == 1){
+		if(wtc == 1)
+		{
 			channelFDIR.SendQueuingMsg(str, sizeof(str));
-			//cout << "im alive" << str;
 			wtc = 0;
 		}
-		else{
+		else
+		{
 			//cout << "im not alive\n";
 		}
 		usleep(20*1000); //20 ms
 	}
+
+	return NULL;
 }
 
 
 /*---------------------------------BYYYE--------------------------------------*/
 sig_t bye()
 {
-  printf("S-> Salut !\n");
-  exit(0);
+	printf("S-> Salut !\n");
+	exit(0);
 }
 
 /*---------------------------------MAIN--------------------------------------*/
 int main (int argc, char* argv[])
 {
-	// Check si argument fourni
-	if (argc!=2)
-	{
-		printf("T'as oublie l'argument pinpin ! Le hostname... \n");
-		exit (-1);
-	}
-
 	// Recuperation du hostname
 	if (gethostname(s, 100) != 0)
 	{
