@@ -4,25 +4,20 @@ using namespace std;
 
 PlanManager::PlanManager()
 {
-	this->nPlan = 0;
-	this->ptInstruction = 0;
-	this->indexPlan = 0;
+	plan=NULL;
+	ptInstruction = 0;
 }
 
 void PlanManager::executePlan(Controller* control, int* responseController,QueuingPort* ChannelErreur, bool mode)
 {
-	if (nPlan > 0)
+	if(plan!=NULL)
 	{
-		Plan P = this->Plans[indexPlan];
 		GenericInstruction* currentInst;
 
 		bool jumpInstruction;
-		//for (int i = 0 ; i < P.getnInstructions(); i++)
 
-		currentInst = P.getInstruction(ptInstruction);
+		currentInst = plan->getInstruction(ptInstruction);
 		jumpInstruction = false;
-
-		//while(wt){
 
 		time_t t = time(0);
 		struct tm * now = localtime(&t);
@@ -30,9 +25,9 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 		cout << "Instruction = " << currentInst->getHour() << ":" << currentInst->getMin() << ":" << currentInst->getSec() << endl;
 
 		int group = currentInst->getIndex();
-		if ((this->bannedInstructions[group]) == true) jumpInstruction = true;
+		if ((bannedInstructions[group]) == true) jumpInstruction = true;
 
-		if ((jumpInstruction == false) && (nPlan > 0) )
+		if ((jumpInstruction == false))
 		{
 			if ((now->tm_hour == currentInst->getHour()) & (now->tm_min == currentInst->getMin()) & (now->tm_sec == currentInst->getSec()))
 			{
@@ -52,7 +47,7 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 				{
 					cout << "control EXECUTE!" << endl;
 					if(mode)
-						control->executeInstruction(currentInst, responseController, ChannelErreur, &P, ptInstruction);
+						control->executeInstruction(currentInst, responseController, ChannelErreur, plan, ptInstruction);
 					else
 						*responseController=1;
 					start_timeout = true;
@@ -62,7 +57,7 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 					Status S;
 					S.code = 4;
 					S.errorID = 2; // A changer.
-					sprintf(S.description, "Wrong instruction type, Plan %d.%d : Line #%d : Index : #%d ",P.getID(),P.getVersion(), ptInstruction+1,  group);
+					sprintf(S.description, "Wrong instruction type, instruction #%d : group #%d ", ptInstruction+1,  group);
 
 					ChannelErreur->SendQueuingMsg((char*)&S, sizeof(Status));
 				}
@@ -94,13 +89,13 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 						{
 							// The attitude was not reached
 							S_controller.errorID = 0; 	// Look the error list
-							sprintf(S_controller.description, "Attitude not reached. Plan %d.%d : Line #%d : Index #%d ",P.getID(),P.getVersion(), ptInstruction+1,  group);
+							sprintf(S_controller.description, "Attitude not reached. instruction #%d : group #%d ", ptInstruction+1,  group);
 						}
 						if (currentInst->getType() == 'p')
 						{
 							// The photo was not taken
 							S_controller.errorID = 1; // Look the error list
-							sprintf(S_controller.description, "Photo not taken. Plan %d.%d : Line #%d : Index #%d ",P.getID(),P.getVersion(), ptInstruction+1,  group);
+							sprintf(S_controller.description, "Photo not talken. instruction #%d : group #%d ", ptInstruction+1,  group);
 						}
 
 						cout << S_controller.description << endl;
@@ -153,83 +148,50 @@ void PlanManager::executePlan(Controller* control, int* responseController,Queui
 		}
 
 
-		//}
-		if (ptInstruction >= P.getnInstructions()) // Fin d'un plan d'instruction, on passe au suivant.
-		{
-			ptInstruction = 0;
-			indexPlan = (indexPlan + 1)%PLANS_BUFFER_SIZE;
-			nPlan--;
-			for (int k=0; k< 100; k++) this->bannedInstructions[k] = false;
-		}
+		if (ptInstruction >= plan->getnInstructions()) // Fin d'un plan d'instruction, on efface le plan en cours
+			this->destructPlan();
+	}
 
-	} // end big if
+	else
+		cout << "No plan to execute !" << endl;
 }
 
 void PlanManager::generatePlan(const char* filepath)
 {
 	cout << "GENERATE PLAN" << endl;
 
-	int version;
-	int num_plan;
-	bool existnewPlan = false;
-
 	string s = filepath;
-	version = s[6]-'0';
-	num_plan = s[4]-'0';
 
-	Plan myPlan(num_plan, version);
-	myPlan.loadPlan(filepath);
+	plan = new Plan();
+	plan->loadPlan(filepath);
 
-	//Plans[nPlan].printPlan();
-
-	cout << "version "<< version << endl;
-	cout << "num_plan "<< num_plan<< endl;
-
-	for (int i = 0 ; i < nPlan; i++)
-	{
-		cout << "nplan " << Plans[(i+indexPlan)%PLANS_BUFFER_SIZE].getID()<< endl;
-		int k = (i+indexPlan)%PLANS_BUFFER_SIZE;
-		if (  (Plans[k].getID()==num_plan) & (k != indexPlan)  )
-		{
-			cout << "hola " << Plans[k].getVersion()<<endl;
-			if (Plans[k].getVersion() < version)
-			{
-				Plans[k] = myPlan;
-				cout << " New version of an existing plan "<< endl;
-			}
-			existnewPlan = true;
-		}
-	}
-
-	cout<<endl<<"Le plan existe ? "<<existnewPlan<<endl;
-	if (!existnewPlan)
-	{
-			Plans[(nPlan+indexPlan)%PLANS_BUFFER_SIZE] = myPlan;
-			nPlan++;
-	}
 	cout<<"Plan ajouté"<<endl;
 }
 
-void PlanManager::printPlan(int indexPlan)
+void PlanManager::printPlan()
 {
-	if (indexPlan >=nPlan)
-	{
-		cout << "Plan " << indexPlan << "does not exist"<< endl;
-		return;
-	}
-	this->Plans[indexPlan].printPlan();
+	if(plan!=NULL)
+		plan->printPlan();
+	else
+		cout << "No plan!" << endl;
 }
 
 void PlanManager::pushBan(int index)
 {
-	this->bannedInstructions[index]= true;
+	bannedInstructions[index]= true;
 }
-void PlanManager::destructPlans()
+
+void PlanManager::destructPlan()
 {
-    this->nPlan = 0;
-	this->ptInstruction = 0;
-	this->indexPlan = 0;
-	for(i=0;i<PLANS_BUFFER_SIZE;i++){
-            delete this->Plans[i];
-	}
+	ptInstruction = 0;
+	if(plan!=NULL)
+		delete plan;
+	for (int k=0; k< 100; k++) bannedInstructions[k] = false;
+}
+
+bool PlanManager::planActive()
+{
+	if(plan!=NULL)
+		return true;
+	return false;
 }

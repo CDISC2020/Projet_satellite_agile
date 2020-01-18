@@ -19,8 +19,7 @@
 #include "Controller.h"
 #include "../ARINC/ARINC_Com.h"
 #include "../communication/statusManager.h"
-
-#define PLANS_BUFFER_SIZE 2
+#include "../FDIR/FDIR.h"
 
 using namespace std;
 
@@ -36,28 +35,22 @@ struct PlanFilePath {
 	char filepath[64];
 };
 
-typedef struct ModeStruct ModeStruct;
-struct ModeStruct {
-	int code;
-	bool rpiMode;
-};
-
 class PlanManager
 {
 protected:
-	Plan Plans[PLANS_BUFFER_SIZE];
-	int nPlan;
+	Plan* plan;
+
 	int ptInstruction;
-	int indexPlan;
 	bool bannedInstructions[100]={false};
 
 public:
 	PlanManager();
 	void executePlan(Controller* , int *,QueuingPort*, bool);
 	void generatePlan(const char*);
-	void printPlan(int indexPlan);
+	void printPlan();
 	void pushBan(int index);
-	void destructPlans();
+	void destructPlan();
+	bool planActive();
 };
 
 #endif

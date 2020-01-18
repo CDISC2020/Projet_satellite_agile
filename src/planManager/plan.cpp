@@ -3,12 +3,8 @@
 using namespace std;
 
 
-Plan::Plan() {}
-
-Plan::Plan(int identifier, int ver)
+Plan::Plan()
 {
-	this->id = identifier;
-	this->version = ver;
 	this->nInstructions = 0;
 }
 
@@ -100,13 +96,4 @@ GenericInstruction* Plan::getInstruction(int i)
 	}
 }
 
-int Plan::getID()
-{
-	return this->id;
-}
-
-int Plan::getVersion()
-{
-	return this->version;
-}
 

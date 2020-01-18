@@ -18,18 +18,13 @@ class Plan
 	protected:
 		GenericInstruction* ActivityList[maxInstructions]; 
 		int nInstructions;
-		int id;
-		int version;
 	public:
 		Plan();
-		Plan(int identifier, int ver);
 		int getnInstructions();
 		void printPlan();
 		GenericInstruction* getInstruction(int i);
 		void loadPlan(const char* filepath);
 		bool stockInstruction(GenericInstruction* newInstruction);
-		int getID();
-		int getVersion();
 };
 
 #endif

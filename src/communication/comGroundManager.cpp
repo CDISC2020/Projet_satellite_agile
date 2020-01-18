@@ -36,7 +36,7 @@ char s[100];
 
 char buffer[1024];
 char bufferFDIR[1024];
-char cmde[50];
+char cmde[100];
 
 int wtc = 0;
 
@@ -208,29 +208,8 @@ void* Communic_Interne(void* argv)
 			sm.newNotification(status->errorID, str);
 		}
 
-		usleep(100);
-	}
-
-	return NULL;
-}
-
-/*----------------------------COMMUNICATION AVEC FDIR---------------------------------*/
-void* Communic_fdir(void* argv)
-{
-	sleep(2);	
-	
-	QueuingPort channelInFDIR(1, 18002, s); 		// Server
-
-	channelInFDIR.Display();
-
-	while(1)
-	{
-		channelInFDIR.RecvQueuingMsg(bufferFDIR);
-
-		statusFDIR = (Status*)bufferFDIR;
-
 		// changement mode primary ou backup
-		if(statusFDIR->code == 6)
+		else if(statusFDIR->code == 6)
 		{
 			m = (ModeStruct*)bufferFDIR;
 			mode = m->rpiMode;
@@ -262,9 +241,10 @@ void* am_alive(void* argv)
 		else{
 			//cout << "im not alive\n";
 		}
-		usleep(1000000000000000000);
+		usleep(20*1000); //20 ms
 	}
 }
+
 /*---------------------------------BYYYE--------------------------------------*/
 sig_t bye()
 {

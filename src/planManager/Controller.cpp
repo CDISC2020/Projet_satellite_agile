@@ -54,7 +54,7 @@ void Controller::executeInstruction(GenericInstruction* instruction, int* respon
 		Status S;
 		S.code = 4;
 		S.errorID = 2; // A changer.
-		sprintf(S.description, "Wrong instruction type, Plan %d.%d : Line #%d : Index : #%d ",P->getID(),P->getVersion(), ptInstruction+1,  instruction->getIndex());
+		sprintf(S.description, "Wrong instruction type, instruction #%d : group : #%d ", ptInstruction+1,  instruction->getIndex());
 
 		ChannelErreur->SendQueuingMsg((char*)&S, sizeof(Status));
 	}
