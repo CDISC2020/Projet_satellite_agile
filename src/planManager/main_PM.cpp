@@ -19,22 +19,26 @@
 using namespace std;
 
 
-int tid_FD, tid_FP;
+int tid_FD, tid_FP, tid_A;
 pthread_t *thread1, *thread2;
-int responseController = 0;
-Controller control;
+
 PlanManager PM;
-bool mode=false; // 'false' pour follower et 'true' pour leader
-QueuingPort* channelFDIR;
+Controller control;
+int responseController = 0;
+
+char s[100];
+
+bool mode=false; // 'false' pour follower et 'true' pour leader // Toujours init a false
+
+QueuingPort* channelFDIR;		// Client vers FDIR
 QueuingPort* channelSM; 		// Client_PM vers com ground / SM
 QueuingPort* channelReceptionPM; 	// Server_PM
+
 pthread_mutex_t* mu=new pthread_mutex_t();  // Mutex sur la gestion des plans
 
+/*-----------------------SERVEUR--------------------------*/
 void * Server_PM(void *args)
 {
-	//PlanManager* PM = (PlanManager*) args;
-	cout << "Bonjour du Thread Processeur " << tid_FD << endl;
-
 	int x=0;
 
 	PlanFilePath* f;
@@ -51,30 +55,41 @@ void * Server_PM(void *args)
 		channelReceptionPM->RecvQueuingMsg(buffer);
 		s = (Status*)buffer;
 
-		if(s->code == 3)
+		if(s->code == 3) // nouveau plan
 		{
 			// ARRIVE de COM
 			f=(PlanFilePath*)buffer;
 			cout<<"Msg("<<x++<<"):  path ="<<f->filepath<<endl;
+
+
+			pthread_mutex_lock(mu);              // verrouiller la ressource partagé
 			PM.generatePlan(f->filepath);
+			pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
 		}
 
-		else if(s->code == 6)
+		else if(s->code == 6) // Changement de mode
 		{
 			// ARRIVE de FDIR
 			m = (ModeStruct*)buffer;
 			mode = m->rpiMode;
 		}
 
-	        else if (s->code == 17)
+	        else if (s->code == 17) // telecommande
                 {
+			// ARRIVE de COM 
 			f=(PlanFilePath*)buffer;
 			cout<<"Msg("<<x++<<"):  path ="<<f->filepath<<endl;
 
 			pthread_mutex_lock(mu);              // verrouiller la ressource partagé
+			// Backup plan : Plan plan = PM.backup // ou filepath
 			PM.destructPlan();
-			pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
 			PM.generatePlan(f->filepath);
+			// N = PM.getNInstru
+			// for i<N
+			// 	executePlan
+			// PM.destruct
+			// PM.recover(plan) // soit recupère current instuction soit (mieux) cherche la premier instruction pas encore passée
+			pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
                 }
 
 		usleep(100);
@@ -84,6 +99,8 @@ void * Server_PM(void *args)
 	return NULL;
 }
 
+
+/*--------------------FONCTIONNEMENT----------------------*/
 void before()
 {
 // Maintenant c'est le FDIR qui gère les watchdog, donc plus ici ! :)
@@ -91,70 +108,79 @@ void before()
 
 void proceed()
 {
-// Fonctionnement normal
-	sleep(1);
-	pthread_mutex_lock(mu);              // verrouiller la ressource partagé
+	// Fonctionnement normal
 	cout << "Fonctionnement" << endl;
+	pthread_mutex_lock(mu);              // verrouiller la ressource partagé
 	PM.executePlan(&control, &responseController,channelSM,mode);
 	pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
 }
 
-sig_t bye()
-{
-	cout << "Mort........" << endl;
-	exit(0);
-}
-
 void after()
 {
-	//str[100]='C' si vous êtes sur la Com, ='P' si vous êtes sur le plan
-	char str[100]="P";
-	channelFDIR->SendQueuingMsg(str, sizeof(str));
+	// rien
 }
 
 void * Client_PM(void *args)
 {
-	signal(SIGINT, (sig_t)bye);
-
 	while(1)
 	{
+		// probleme watchdog periode d'execution/periode WD marche pas, autre thread ?
 		before();
 		proceed();
 		after();
+
 		usleep(5*1000); // 5 ms
 	}
 
 	return NULL;
 }
 
-int  main (int argc,char* argv[])
+
+/*-----------------------ALIVE----------------------------*/
+void* Alive(void* args)
 {
+	while(1)
+	{	
+		//str[100]='C' si vous êtes sur la Com, ='P' si vous êtes sur le plan
+		char str[100]="P";
+		channelFDIR->SendQueuingMsg(str, sizeof(str));
 
-	cout << "bonjour je suis le main_PM" << endl;
-
-	if (argc!=2)
-	{
-		printf("T'as oublie l'argument pinpin ! Le hostname... \n");
-		exit (-1);
+		usleep(10*1000); //10 ms
 	}
 
+	return NULL;
+}
 
-	char s[100];
 
+/*------------------------SIGNAL--------------------------*/
+sig_t bye()
+{
+	cout << "Mort........" << endl;
+	exit(0);
+}
+
+/*-------------------------MAIN---------------------------*/
+int  main (int argc,char* argv[])
+{
+	// Recuperation du hostname
 	if (gethostname(s, 100) != 0)
 	{
 	    perror("S-> gethostname");
 	    exit(1);
 	}
-
 	cout << "Host name " << s << endl;
 
-	QueuingPort channelFDIR(0, 18002, argv[1]);
-	channelSM = new QueuingPort(0, 18003, argv[1]); 		// Client_PM vers com ground / SM
-	channelReceptionPM = new QueuingPort(1, 18001, s); 		// Server_PM
-	channelFDIR.Display();//quelques info sur l'ouverture du socket
+	signal(SIGINT, (sig_t)bye);
 
+	channelFDIR = new QueuingPort(0, 18002, s);		// Client FDIR
+	channelSM = new QueuingPort(0, 18003, s); 		// Client COM
+	channelReceptionPM = new QueuingPort(1, 18001, s); 	// Server
 
+	usleep(500000);
+
+	channelFDIR->Display();
+	channelSM->Display();
+	channelReceptionPM->Display();
 
 	// generate thread
 	pthread_attr_t *thread_attributes;
@@ -171,7 +197,7 @@ int  main (int argc,char* argv[])
 	if (pthread_create(thread, thread_attributes, Server_PM,(void *) NULL) != 0)
 		perror ("Thread_Server-> Failure detector thread pb!");
 
-
+	/* creation du thread Client1 */
 	tid_FP = 2;
 
 	thread_attributes=(pthread_attr_t *)malloc(sizeof(pthread_attr_t));
@@ -180,7 +206,18 @@ int  main (int argc,char* argv[])
 	thread2 = thread;
 	pthread_attr_init(thread_attributes);
 	if (pthread_create(thread, thread_attributes, Client_PM,(void *) NULL) != 0)
-		perror ("Thread_Server-> Failure detector thread pb!");
+		perror ("Thread_Client-> Failure detector thread pb!");
+
+	/* creation du thread Client2 */
+	tid_A = 3;
+
+	thread_attributes=(pthread_attr_t *)malloc(sizeof(pthread_attr_t));
+	thread=(pthread_t *)malloc(sizeof(pthread_t));
+
+	thread2 = thread;
+	pthread_attr_init(thread_attributes);
+	if (pthread_create(thread, thread_attributes, Alive,(void *) NULL) != 0)
+		perror ("Thread_Alive-> Failure detector thread pb!");
 
 	while(1) {usleep(100);}
 
