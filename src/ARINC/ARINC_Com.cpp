@@ -6,12 +6,10 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <strings.h>
-#include <string.h>
 #include <unistd.h>
 #include <sys/select.h>
 #include <sys/time.h>
 #include <arpa/inet.h>
-#include <cerrno>
 
 #include <iostream>
 using namespace std;

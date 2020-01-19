@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <fstream>
 
 #include "FDIR.h" 
 
@@ -40,6 +41,13 @@ void* gestion_wd_arduino(void* args)
 
 int  main (int argc,char* argv[]) 
 {
+	// Ecriture du pid dans un fichier
+	int pid=getpid();
+	ofstream fichierPid;
+	fichierPid.open("pid_FDIR");
+	fichierPid << pid << endl;
+	fichierPid.close();
+	
 	if (gethostname(s, 100) != 0) 
 	{
     		perror("S-> gethostname");

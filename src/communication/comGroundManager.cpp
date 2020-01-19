@@ -166,8 +166,8 @@ void* Communic_Sol(void* args)
 
 		}
 
-		else{
-			cout << "In follower mode\n" << endl;}
+//		else{
+//			cout << "In follower mode\n" << endl;}
 
 		wtc = 1;
 
@@ -253,6 +253,13 @@ sig_t bye()
 /*---------------------------------MAIN--------------------------------------*/
 int main (int argc, char* argv[])
 {
+	// Ecriture du pid dans un fichier
+	int pid=getpid();
+	ofstream fichierPid;
+	fichierPid.open("pid_COM");
+	fichierPid << pid << endl;
+	fichierPid.close();
+
 	// Recuperation du hostname
 	if (gethostname(s, 100) != 0)
 	{

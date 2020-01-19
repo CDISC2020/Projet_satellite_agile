@@ -164,6 +164,13 @@ sig_t bye()
 /*-------------------------MAIN---------------------------*/
 int  main (int argc,char* argv[])
 {
+	// Ecriture du pid dans un fichier
+	int pid=getpid();
+	ofstream fichierPid;
+	fichierPid.open("pid_PM");
+	fichierPid << pid << endl;
+	fichierPid.close();
+
 	// Recuperation du hostname
 	if (gethostname(s, 100) != 0)
 	{

@@ -6,6 +6,9 @@ main_Ground
 
 # autres
 listpid
+pid_COM
+pid_PM
+pid_FDIR
 LogError.txt
 demande_imgs.txt
 src/planManager/plans/*

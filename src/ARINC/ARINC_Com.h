@@ -1,14 +1,15 @@
-#ifndef DEF_ARINC_COM
-#define DEF_ARINC_COM
+#ifndef DEF_ARINC
+#define DEF_ARINC
 
 #define MAXLGMSG 1024
 #define LNGHOST 128
 #define LNGMAX 1024
 
 #include <netinet/in.h>
+#include <cerrno>
+#include <string.h>
 
-class QueuingPort 
-{
+class QueuingPort {
 protected:
 	char buffer [MAXLGMSG];
 	int size;
@@ -35,8 +36,8 @@ public:
         void Display();
 };
 
-class SamplingPort : public QueuingPort 
-{
+
+class SamplingPort : public QueuingPort {
 private:
 	int nfds;			// number of selected input descriptors by select
 	struct timeval timeout;		// Timeout setting variable
@@ -58,4 +59,3 @@ public:
 };
 
 #endif
-

@@ -4,7 +4,7 @@
 // These values correspond to PERIODs assigned to Partition
 // Used to compute the time frame and to perform verifications
 
-#define TIME_PM 5
-#define TIME_COM 10
-#define TIME_FDIR 20
+#define TIME_P1 8000
+#define TIME_P2 26000
+#define TIME_P3 32000
 
