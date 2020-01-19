@@ -6,7 +6,7 @@ main_Ground
 
 # autres
 listpid
-LogErreur.txt
+LogError.txt
 demande_imgs.txt
 src/planManager/plans/*
 src/planManager/tm/*
