@@ -38,8 +38,6 @@ pthread_mutex_t* mu=new pthread_mutex_t();  // Mutex sur la gestion des plans
 /*-----------------------SERVEUR--------------------------*/
 void * Server_PM(void *args)
 {
-	int x=0;
-
 	PlanFilePath* f;
 	Status* s;
 	ModeStruct* m;
@@ -54,12 +52,12 @@ void * Server_PM(void *args)
 
 		if(s->code == 3) // nouveau plan
 		{
-			// ARRIVE de COM
+			// ARRIVE de COM PLAN
 			f=(PlanFilePath*)buffer;
-			cout<<"Msg("<<x++<<"):  path ="<<f->filepath<<endl;
-
+			cout << "PLAN" << endl;
 
 			pthread_mutex_lock(mu);              // verrouiller la ressource partagé
+			PM.destructPlan();
 			PM.generatePlan(f->filepath);
 			pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
 		}
@@ -73,23 +71,24 @@ void * Server_PM(void *args)
 
 	        else if (s->code == 17) // telecommande
                 {
-			// ARRIVE de COM 
+			// ARRIVE de COM TM
 			f=(PlanFilePath*)buffer;
-			cout<<"Msg("<<x++<<"):  path ="<<f->filepath<<endl;
+			cout << "TM" << endl;
 
+			// Comment cancel une TM !!? 
 			pthread_mutex_lock(mu);              // verrouiller la ressource partagé
-			Plan* planBack = PM.backup();
-			// Si on a bien un plan actif
-			if(planBack!=NULL)	// On charge la telecommande
-				PM.destructPlan();
+			Plan* planBack = PM.backup(); // on save ancien plan
 			PM.generatePlan(f->filepath); 
 
-			int N =PM.getNInstru(); // On execute la telecommande
-			for(int i=0; i<N; i++)
+			while(PM.backup()!=NULL) // on execute la telecommande
+			{
+				cout << endl << "Execute TM" << endl;
 				PM.executePlan(&control, channelSM, mode);
+				usleep(500000);
+			}
 
 			PM.destructPlan();	// On recharge le plan precedent
-			if(planBack!=NULL)
+			if(planBack!=NULL)	// S'il existe
 				PM.recover(planBack);
 			pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
                 }

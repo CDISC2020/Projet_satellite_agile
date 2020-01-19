@@ -169,7 +169,9 @@ void PlanManager::generatePlan(const char* filepath)
 	string s = filepath;
 	plan = new Plan();
 	plan->loadPlan(filepath);
-	ptInstruction=0;
+
+	ptInstruction = 0;
+	for (int k=0; k< 100; k++) bannedInstructions[k] = false;
 
 	cout<<"Plan ajouté"<<endl;
 }
@@ -190,8 +192,10 @@ void PlanManager::pushBan(int index)
 void PlanManager::destructPlan()
 {
 	if(plan!=NULL)
+	{
 		delete plan;
-	plan=NULL;
+		plan=NULL;
+	}
 	ptInstruction = 0;
 	for (int k=0; k< 100; k++) bannedInstructions[k] = false;
 }
@@ -210,8 +214,9 @@ int PlanManager::getNInstru()
 
 void PlanManager::recover(Plan* planBack)
 {
+	cout << "recover" << endl;
+	this->destructPlan();
 	plan=planBack;
-	ptInstruction=0;
-	// Le pt va se reactualiser car on va skip les instru dont l'heure est 
-	// déà passé (donc normalement les instru deja executées)
+	// Le ptInstru va se reactualiser car on va skip les instru dont l'heure
+	// est déjà passé (donc normalement les instru deja executées)
 }

@@ -31,7 +31,7 @@ PlanFilePath *imageName;
 string imageList[128];
 int ptImageReceived = 0;
 int ptImageSent = 0;
-bool mode = true; // Mode slave;
+bool mode = false; // Mode slave; // toujours init a false
 char s[100];
 
 char buffer[1024];
@@ -74,7 +74,7 @@ void* Communic_Sol(void* args)
 
 	PlanFilePath pfp_plan, pfp_tm;
 	pfp_plan.code = 3;
-	pfp_tm.code = 4;
+	pfp_tm.code = 17;
 
 	// Modifiable
 	// Dossiers reception

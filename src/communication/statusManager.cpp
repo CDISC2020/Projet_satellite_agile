@@ -4,7 +4,7 @@ using namespace std;
 
 StatusManager::StatusManager()
 {
-	string defautlPath = "../../LogError.txt";
+	string defautlPath = "LogError.txt";
 	this->pathLogFile= defautlPath;
 }
 
