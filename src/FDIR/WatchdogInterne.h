@@ -7,6 +7,7 @@ class WatchdogInterne
 {
 private:
 	int valeur;
+	int valeur_max;
 public:
 	void set();
 	int readw();

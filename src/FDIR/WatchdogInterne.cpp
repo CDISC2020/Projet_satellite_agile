@@ -6,13 +6,13 @@ using namespace std;
 
 WatchdogInterne::WatchdogInterne()
 {
-
+	valeur_max=5;
 }
 
 
 void WatchdogInterne::set(){
 	// I'm alive!!!!
-	valeur = 5;
+	valeur = valeur_max;
 }
 
 
