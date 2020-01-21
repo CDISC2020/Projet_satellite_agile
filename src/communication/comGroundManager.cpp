@@ -24,7 +24,6 @@ using namespace std;
 int tid_sol, tid_interne, tid_alive;
 StatusManager sm;
 Status *status;
-Status *statusFDIR;
 PlanName *p;
 ModeStruct *m;
 PlanFilePath *imageName;
@@ -60,6 +59,28 @@ int getdir (string dir, vector<string> &files)
     return 0;
 }
 
+bool tryFile (string file_dir, string file_name)
+{
+	string path = file_dir + file_name;
+	fstream filestr;
+ 	filestr.open(path.c_str());
+
+	if (filestr.is_open())
+	{
+    		filestr.close();
+		return true;
+  	}
+	else
+	{
+		cout << "Error to open file" << endl;
+		Status S;
+		S.errorID = 9; // A changer.
+		sprintf(S.description, "File corrupted");
+		string str(S.description);
+		sm.newNotification(S.errorID, str);
+		return false;
+	}
+}
 
 /*---------------------------------COMMUNICATION AU SOL--------------------------------------*/
 void* Communic_Sol(void* args)
@@ -89,6 +110,9 @@ void* Communic_Sol(void* args)
 	// Dossier une fois traité
 	string c_plan = "src/planManager/plans/";
 	string c_tm = "src/planManager/tm/";
+
+	bool verification_plan;
+	bool verification_tm;
 	
 	while(1)
 	{
@@ -108,17 +132,17 @@ void* Communic_Sol(void* args)
 
 				while(ptImageSent != ptImageReceived)
 				{
-					//cout << "boucle \n";
+
 					// envoyer les images existentes
 					sprintf(cmde, "sh src/communication/uploadStoG.sh %s", imageList[ptImageSent].c_str()); 
 					system(cmde);
 					sleep(1);
-					cout << "Img envoyée \n" << endl;
+					cout << "Image sent \n" << endl;
 
 					//enlever du satellite l'image envoyée au sol
 					sprintf(cmde, "rm %s", imageList[ptImageSent].c_str());
 					system(cmde);
-					cout << "Images enlevées\n" << endl;
+					cout << "Image removed\n" << endl;
 
 					ptImageSent = (ptImageSent + 1)%128;
 
@@ -134,16 +158,19 @@ void* Communic_Sol(void* args)
 			it=find(files.begin(),files.end(),name_plan);
 			if(it!=files.end()) // Si fichier présent dans la liste
 			{
-				// deplace dans src/planMagager/plans avec system()
+ 				verification_plan = tryFile(dir_plan, name_plan); //verifier si on reussi a ouvrir le plan
 
-				sprintf(cmde, "mv %s%s %s", dir_plan.c_str(), name_plan.c_str(), c_plan.c_str());
-				system(cmde);
-				sleep(1);
-				cout << "Plan envoyé au PM\n";
+				if(verification_plan)
+				{
+					// deplace dans src/planMagager/plans avec system()
+					sprintf(cmde, "mv %s%s %s", dir_plan.c_str(), name_plan.c_str(), c_plan.c_str());
+					system(cmde);
+					sleep(1);
+					cout << "Plan envoyé au PM\n";
 
-				sprintf(pfp_plan.filepath, "%s%s", c_plan.c_str(), name_plan.c_str());
-				
-				channelOutPM.SendQueuingMsg((char*)&pfp_plan, sizeof(PlanFilePath));
+					sprintf(pfp_plan.filepath, "%s%s", c_plan.c_str(), name_plan.c_str());
+					channelOutPM.SendQueuingMsg((char*)&pfp_plan, sizeof(PlanFilePath));
+				}
 			}
 
 			/*****************************[ CGM ---TM---> PM ]**********************************/
@@ -152,18 +179,21 @@ void* Communic_Sol(void* args)
 			it=find(tms.begin(),tms.end(),name_tm);
 			if(it!=tms.end()) // Si fichier présent dans la liste
 			{
-				// deplace dans src/planMagager/tm avec system()
+				verification_tm = tryFile(dir_tm,name_tm);
 
-				sprintf(cmde, "mv %s%s %s", dir_tm.c_str(), name_tm.c_str(), c_tm.c_str());
-				system(cmde);
-				sleep(1);
-				cout << "TM envoyé au PM\n";
+				if(verification_tm)
+				{
+						// deplace dans src/planMagager/tm avec system()
+					sprintf(cmde, "mv %s%s %s", dir_tm.c_str(), name_tm.c_str(), c_tm.c_str());
+					system(cmde);
+					sleep(1);
+					cout << "TM envoyé au PM\n";
 
-				sprintf(pfp_tm.filepath, "%s%s", c_tm.c_str(), name_tm.c_str());
+					sprintf(pfp_tm.filepath, "%s%s", c_tm.c_str(), name_tm.c_str());
 
-				channelOutPM.SendQueuingMsg((char*)&pfp_tm, sizeof(PlanFilePath));
+					channelOutPM.SendQueuingMsg((char*)&pfp_tm, sizeof(PlanFilePath));
+				}
 			}
-
 		}
 
 //		else{
@@ -191,6 +221,7 @@ void* Communic_Interne(void* args)
 
 		status = (Status*)buffer;
 
+ 		/**************[ PM ---IMG---> CGM ]**************/
 		// Remplir le tableau avec des photos prises
 		if (status->code == 3)		// utilisation d'un type p
 		{
@@ -200,6 +231,7 @@ void* Communic_Interne(void* args)
 			ptImageReceived = (ptImageReceived + 1)%128;
 		}
 
+ 		/**************[ PM ---LOG---> CGM ]**************/
 		// Plan manager --> Comunication Manager
 		// Error identifier and description
 		else if(status->code == 4)
@@ -208,8 +240,9 @@ void* Communic_Interne(void* args)
 			sm.newNotification(status->errorID, str);
 		}
 
+		/*************[ FDIR ---MODE---> CGM ]*************/
 		// changement mode primary ou backup
-		else if(statusFDIR->code == 6)
+		else if(status->code == 6)
 		{
 			m = (ModeStruct*)buffer;
 			mode = m->rpiMode;
@@ -246,7 +279,7 @@ void* am_alive(void* args)
 /*---------------------------------BYYYE--------------------------------------*/
 sig_t bye()
 {
-	printf("S-> Salut !\n");
+	printf("S-> Bye !\n");
 	exit(0);
 }
 
@@ -288,7 +321,7 @@ int main (int argc, char* argv[])
 
 	pthread_attr_init(thread_attributes);
 	if (pthread_create(thread, thread_attributes, &Communic_Sol, (void*) NULL) != 0)
-		perror ("Thread_Server-> Communication au sol error!");
+		perror ("Thread_Server-> Connection to ground error!");
 
 /////////* creation du thread processus communication interne */
 	tid_interne=2;
@@ -298,7 +331,7 @@ int main (int argc, char* argv[])
 
 	pthread_attr_init(thread_attributes);
 	if (pthread_create(thread, thread_attributes, &Communic_Interne, (void *) NULL) != 0)
-		perror ("Thread_Server-> Communication interne error!");
+		perror ("Thread_Server-> Internal connection error!");
 
 /////////* creation du thread processus I'm alive */
 	tid_alive=3;
