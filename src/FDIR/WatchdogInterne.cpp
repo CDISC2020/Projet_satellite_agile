@@ -7,6 +7,7 @@ using namespace std;
 WatchdogInterne::WatchdogInterne()
 {
 	valeur_max=5;
+	valeur=valeur_max;
 }
 
 

@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 	printf("********* WAITING BEF0RE SCHEDULING LOOP  ************\n");
 	printf("********* All partitions must be stopped  ************\n");
 
-	sleep (10);
+	sleep (5);
 
 
 

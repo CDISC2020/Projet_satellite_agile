@@ -96,58 +96,6 @@ void maj_listpid()
 	wfichier.close();
 }	
 
-void recouvrement_COM()
-{
-	// tolere faute par crash pas par freeze, sinon faut tuer process avant et donc recup les pid de tout le monde
-
-	if(rec_COM)
-	{
-		// autre time out
-		cout << "faut changer de raspy my boi" << endl;
-	}
-	else
-	{
-		rec_COM=true;
-
-		raise(SIGUSR2);
-
-		/*// reboot COM
-		system("xterm -e ./main_COM &");
-
-		// maj du listpid
-		maj_listpid();
-
-		// previent ARINC qu'il faut prendre en compte la modif de listpid
-		if(arinc_pid!=-1)
-			kill(arinc_pid,SIGUSR1);*/
-	}
-}
-
-void recouvrement_PM()
-{
-	// tolere faute par crash pas par freeze, sinon faut tuer process avant et donc recup les pid de tout le monde
-
-	if(rec_PM)
-	{
-		cout << "faut changer de raspy my boi" << endl;
-	}
-	else
-	{
-		rec_PM=true;
-		raise(SIGUSR2);
-
-		/*// reboot PM
-		system("xterm -e ./main_PM &");
-
-		// maj du listpid
-		maj_listpid();
-
-		// previent ARINC qu'il faut prendre en compte la modif de listpid
-		if(arinc_pid!=-1)
-			kill(arinc_pid,SIGUSR1);*/
-	}
-}
-
 // signal handler
 void ARINC_PID(int signal)
 {
@@ -163,21 +111,90 @@ void ARINC_PID(int signal)
 	arinc_pid=atoi(line.c_str());
 }
 
-void signal2(int sig)
+void* reboot_PM(void* args)
 {
-	cout << "MAJ PID" << endl;
+	// reboot PM
 	system("xterm -e ./main_PM &");
 	sleep(1);
+
+	// maj du listpid
 	maj_listpid();
-	cout << "arinc_pid=" << arinc_pid << endl;
+
+	// previent ARINC qu'il faut prendre en compte la modif de listpid
 	if(arinc_pid!=-1)
 		kill(arinc_pid,SIGUSR1);
+
+	return NULL;
+}
+
+void* reboot_COM(void* args)
+{
+	// reboot COM
+	system("xterm -e ./main_Com_ST &");
+	sleep(1);
+
+	// maj du listpid
+	maj_listpid();
+
+	// previent ARINC qu'il faut prendre en compte la modif de listpid
+	if(arinc_pid!=-1)
+		kill(arinc_pid,SIGUSR1);
+
+	return NULL;
+}
+
+void recouvrement_COM()
+{
+	// tolere faute par crash pas par freeze, sinon faut tuer process avant et donc recup les pid de tout le monde
+
+	if(rec_COM)
+	{
+		// autre time out
+		cout << "faut changer de raspy my boi" << endl;
+	}
+	else
+	{
+		rec_COM=true;
+
+		pthread_attr_t *thread_attributes;
+	        pthread_t *thread;
+
+	        thread_attributes=(pthread_attr_t *)malloc(sizeof(pthread_attr_t));
+	        thread=(pthread_t *)malloc(sizeof(pthread_t));
+
+	        pthread_attr_init(thread_attributes);
+	        if (pthread_create(thread, thread_attributes, reboot_COM,(void *) NULL) != 0)
+	                perror ("Thread FDIR COM!");
+	}
+}
+
+void recouvrement_PM()
+{
+	// tolere faute par crash pas par freeze, sinon faut tuer process avant et donc recup les pid de tout le monde
+
+	if(rec_PM)
+	{
+		cout << "faut changer de raspy my boi" << endl;
+	}
+	else
+	{
+		rec_PM=true;
+
+		pthread_attr_t *thread_attributes;
+	        pthread_t *thread;
+
+	        thread_attributes=(pthread_attr_t *)malloc(sizeof(pthread_attr_t));
+	        thread=(pthread_t *)malloc(sizeof(pthread_t));
+
+	        pthread_attr_init(thread_attributes);
+	        if (pthread_create(thread, thread_attributes, reboot_PM,(void *) NULL) != 0)
+	                perror ("Thread FDIR PM!");
+	}
 }
 
 int  main (int argc,char* argv[]) 
 {
 	signal(SIGUSR1,ARINC_PID);
-	signal(SIGUSR2,signal2);
 
 	// Ecriture du pid dans un fichier
 	int pid=getpid();
@@ -189,7 +206,6 @@ int  main (int argc,char* argv[])
 	}
 	fichierPid << pid << endl;
 	fichierPid.close();
-
 	
 	if (gethostname(s, 100) != 0) {
     		perror("S-> gethostname");
@@ -225,10 +241,20 @@ int  main (int argc,char* argv[])
 
 	char buffer[100];
 	
+	cout << "WD COM=" << myFDIR.read_watch_com() << endl;
+	cout << "WD PM=" << myFDIR.read_watch_plan() << endl;
+
 	while(1) 
 	{	
 		channel.RecvQueuingMsg(buffer);
-		//printf("Message : %s \n",buffer);
+
+		cout << "WD COM=" << myFDIR.read_watch_com() << endl;
+		cout << "WD PM=" << myFDIR.read_watch_plan() << endl;
+
+		if(rec_COM)
+			cout << "COM ... WAK" << endl;
+		if(rec_PM)
+			cout << "PM ... WAK" << endl;
 
 		if (buffer[0]=='C')
 		{
