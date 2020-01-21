@@ -6,6 +6,7 @@ using namespace std;
 Plan::Plan()
 {
 	this->nInstructions = 0;
+	this->ptInstruction = 0;
 }
 
 void Plan::printPlan()

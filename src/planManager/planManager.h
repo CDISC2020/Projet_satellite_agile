@@ -41,7 +41,6 @@ class PlanManager
 {
 protected:
 	Plan* plan;
-	int ptInstruction;
 	bool bannedInstructions[100]={false};
 	int responseController;
 

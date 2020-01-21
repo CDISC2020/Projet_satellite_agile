@@ -5,7 +5,6 @@ using namespace std;
 PlanManager::PlanManager()
 {
 	plan=NULL;
-	ptInstruction = 0;
 	responseController=0;
 }
 
@@ -17,12 +16,12 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelCom, bool 
 
 		bool jumpInstruction;
 
-		currentInst = plan->getInstruction(ptInstruction);
+		currentInst = plan->getInstruction(plan->ptInstruction);
 		jumpInstruction = false;
 
 		time_t t = time(0);
 		struct tm * now = localtime(&t);
-		cout << "Inst " << ptInstruction+1 << "/" << plan->getnInstructions() << endl;
+		cout << "Inst " << plan->ptInstruction+1 << "/" << plan->getnInstructions() << endl;
 		cout << "now         = " << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec << endl;
 		cout << "Instruction = " << currentInst->getHour() << ":" << currentInst->getMin() << ":" << currentInst->getSec() << endl;
 
@@ -60,7 +59,7 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelCom, bool 
 					Status S;
 					S.code = 4;
 					S.errorID = 2; // A changer.
-					sprintf(S.description, "Wrong instruction type, instruction #%d : group #%d ", ptInstruction+1,  group);
+					sprintf(S.description, "Wrong instruction type, instruction #%d : group #%d ", plan->ptInstruction+1,  group);
 
 					ChannelCom->SendQueuingMsg((char*)&S, sizeof(Status));
 				}
@@ -92,13 +91,13 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelCom, bool 
 						{
 							// The attitude was not reached
 							S_controller.errorID = 0; 	// Look the error list
-							sprintf(S_controller.description, "Attitude not reached. instruction #%d : group #%d ", ptInstruction+1,  group);
+							sprintf(S_controller.description, "Attitude not reached. instruction #%d : group #%d ", plan->ptInstruction+1,  group);
 						}
 						if (currentInst->getType() == 'p')
 						{
 							// The photo was not taken
 							S_controller.errorID = 1; // Look the error list
-							sprintf(S_controller.description, "Photo not talken. instruction #%d : group #%d ", ptInstruction+1,  group);
+							sprintf(S_controller.description, "Photo not talken. instruction #%d : group #%d ", plan->ptInstruction+1,  group);
 						}
 
 						cout << S_controller.description << endl;
@@ -126,7 +125,7 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelCom, bool 
 				/*-------------------------------------------------------------------*/
 
 				responseController = 0;
-				ptInstruction++;
+				plan->ptInstruction++;
 
 
 			}
@@ -135,23 +134,23 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelCom, bool 
 				|| ((now->tm_hour == currentInst->getHour()) && (now->tm_min > currentInst->getMin()))
 				|| ((now->tm_min  == currentInst->getMin())  && (now->tm_sec > currentInst->getSec())))
 			{
-				cout<<"L'heure est deja passé "<<ptInstruction<<endl;
+				cout<<"L'heure est deja passé "<<plan->ptInstruction<<endl;
 				Status S_heure;
 				S_heure.code = 4;
 				S_heure.errorID = 3;
 				ChannelCom->SendQueuingMsg((char*)&S_heure, sizeof(Status));
 
-				ptInstruction++;
+				plan->ptInstruction++;
 			}
 		}
 		else if (jumpInstruction)
 		{
-			ptInstruction++;
+			plan->ptInstruction++;
 			cout<<"Instruction jumped"<<endl;
 		}
 
 
-		if (ptInstruction >= plan->getnInstructions()) // Fin d'un plan d'instruction, on efface le plan en cours
+		if (plan->ptInstruction >= plan->getnInstructions()) // Fin d'un plan d'instruction, on efface le plan en cours
 		{
 			cout << "Le plan est terminé" << endl;
 			this->destructPlan();
@@ -170,7 +169,6 @@ void PlanManager::generatePlan(const char* filepath)
 	plan = new Plan();
 	plan->loadPlan(filepath);
 
-	ptInstruction = 0;
 	for (int k=0; k< 100; k++) bannedInstructions[k] = false;
 
 	cout<<"Plan ajouté"<<endl;
@@ -196,7 +194,6 @@ void PlanManager::destructPlan()
 		delete plan;
 		plan=NULL;
 	}
-	ptInstruction = 0;
 	for (int k=0; k< 100; k++) bannedInstructions[k] = false;
 }
 
@@ -217,6 +214,4 @@ void PlanManager::recover(Plan* planBack)
 	cout << "recover" << endl;
 	this->destructPlan();
 	plan=planBack;
-	// Le ptInstru va se reactualiser car on va skip les instru dont l'heure
-	// est déjà passé (donc normalement les instru deja executées)
 }

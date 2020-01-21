@@ -25,6 +25,7 @@ class Plan
 		GenericInstruction* getInstruction(int i);
 		void loadPlan(const char* filepath);
 		bool stockInstruction(GenericInstruction* newInstruction);
+		int ptInstruction;
 };
 
 #endif
