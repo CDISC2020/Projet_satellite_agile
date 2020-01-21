@@ -262,12 +262,33 @@ int  main (int argc,char* argv[])
 				myFDIR.dec_watch_plan();// si on a pas de nouvelles, on decremente le compteur
 		}
 		
-		if(!myFDIR.isleader())
+		if(!myFDIR.isleader())//si je ne suis pas leader, je vérifie ce qu'il se passe
 		{
-			if (myFDIR.read_arduino()) 
+			if (myFDIR.read_arduino())
+			{ 
 				cout << "AH, YES, JE VOIS L'ARDUINO " << endl;
-			else 			
+				//tout se passe bien, l'autre raspi est vivante
+			}
+			else
+			{ 			
 				cout << "J'AI DUPER LE SIGNAL" << endl;
+				//dans l'ensemble ca se passe mal (citation historique)
+				cout << "JE PASSE EN LEADER" << endl;
+
+				myFDIR.switch_leader();		
+				mode.rpiMode=myFDIR.isleader();
+
+				QueuingPort channelPM(0, 18001, s);
+       				channelPM.SendQueuingMsg((char*)&mode, sizeof(ModeStruct));
+
+				QueuingPort channelCom(0, 18003, s);
+        			channelCom.SendQueuingMsg((char*)&mode, sizeof(ModeStruct));	
+			}
+		}
+
+		else
+		{
+			cout << "Je suis LEADER, youplala !"<<endl;
 		}
 	}
 

@@ -82,7 +82,7 @@ bool tryFile (string file_dir, string file_name)
 	}
 }
 
-/*---------------------------------COMMUNICATION AU SOL--------------------------------------*/
+/*----------------------MESSAGES ENVOYES VERS PORT 18001 (PM) ET VERS LE SOL-----------------*/
 void* Communic_Sol(void* args)
 {
 	QueuingPort channelOutPM(0, 18001, s); 	// Client PM
@@ -101,15 +101,18 @@ void* Communic_Sol(void* args)
 	// Dossiers reception
 	string dir_plan = string("src/communication/planRecuSol/");
 	string dir_tm = string("src/communication/tmRecuSol/");
+	string dir_log = string("src/communication/");
 
 	// Fichier a chercher
 	string name_dem = "demande_imgs.txt";
 	string name_plan = "plan.txt";
 	string name_tm = "tm.txt";
+	string name_log = "LogError.txt";
 
 	// Dossier une fois traité
 	string c_plan = "src/planManager/plans/";
 	string c_tm = "src/planManager/tm/";
+	string c_log = "src/communication/toSend/";
 
 	bool verification_plan;
 	bool verification_tm;
@@ -125,7 +128,10 @@ void* Communic_Sol(void* args)
 			it=find(files.begin(),files.end(),name_dem);
 			if(it!=files.end()) // Si fichier présent dans la liste
 			{
-				cout << "File find" << endl;
+				cout << "File found" << endl;
+				
+				sprintf(cmde, "mv %s%s %s", dir_log.c_str(), name_log.c_str(), c_log.c_str());
+				system(cmde);
 
 				sprintf(cmde, "sh src/communication/uploadStoG.sh LogError.txt");
 				system(cmde);
@@ -150,7 +156,7 @@ void* Communic_Sol(void* args)
 				string rep_demande_img= dir_plan + name_dem;
 				sleep(5);
 				remove(rep_demande_img.c_str());
-				cout << "Demande enlevée\n";
+				cout << "Request removed\n";
 				sleep(5);
 			}
 			
@@ -166,7 +172,7 @@ void* Communic_Sol(void* args)
 					sprintf(cmde, "mv %s%s %s", dir_plan.c_str(), name_plan.c_str(), c_plan.c_str());
 					system(cmde);
 					sleep(1);
-					cout << "Plan envoyé au PM\n";
+					cout << "Plan sent to PM\n";
 
 					sprintf(pfp_plan.filepath, "%s%s", c_plan.c_str(), name_plan.c_str());
 					channelOutPM.SendQueuingMsg((char*)&pfp_plan, sizeof(PlanFilePath));
@@ -187,7 +193,7 @@ void* Communic_Sol(void* args)
 					sprintf(cmde, "mv %s%s %s", dir_tm.c_str(), name_tm.c_str(), c_tm.c_str());
 					system(cmde);
 					sleep(1);
-					cout << "TM envoyé au PM\n";
+					cout << "TM sent to PM\n";
 
 					sprintf(pfp_tm.filepath, "%s%s", c_tm.c_str(), name_tm.c_str());
 
@@ -207,7 +213,7 @@ void* Communic_Sol(void* args)
 	return NULL;
 }
 
-/*----------------------------COMMUNICATION AVEC PLAN MANAGER---------------------------------*/
+/*----------------------------MESSAGES REÇUS VERS PORT 18003 (CGM)-----------------------*/
 void* Communic_Interne(void* args)
 {
 	QueuingPort channelIn(1, 18003, s); 		// Server
@@ -254,7 +260,7 @@ void* Communic_Interne(void* args)
 	return NULL;
 }
 
-/*---------------------------------ALIVE--------------------------------------*/
+/*-------------------ALIVE - ENVOYER MESSAGE VERS PORT 18002 (FDIR)--------------------*/
 void* am_alive(void* args)
 {
 	QueuingPort channelFDIR(0, 18002, s); // Client FDIR

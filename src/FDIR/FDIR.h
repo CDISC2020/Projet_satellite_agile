@@ -46,6 +46,7 @@ class FDIR
 		int read_arduino();		
 
 		bool isleader();
+		void switch_leader();
 };
 
 #endif

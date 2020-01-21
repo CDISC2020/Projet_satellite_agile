@@ -9,7 +9,7 @@ using namespace std;
 
 FDIR::FDIR() 
 {
-	leader=true;
+	leader=false;
 }
 
 //on peut optimiser le nombre de méthodes en donnant un attribut aux différents WD, si jamais on a le temps
@@ -55,10 +55,16 @@ void FDIR::reset_arduino()
 }
 int FDIR::read_arduino()
 {
-	return watch_ard.readw();
+	//attention quand la raspi d'en face est vivante, la gpio est a 0. Logique inverse d'où le "!" ! 
+	return (!watch_ard.readw());
 }
 
 bool FDIR::isleader()
 {
 	return leader;
+}
+
+void FDIR::switch_leader()
+{
+	leader=!leader;
 }
