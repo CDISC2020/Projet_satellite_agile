@@ -56,7 +56,6 @@ int  main (int argc,char* argv[])
 	cout << "Host name " << s << endl; 
 
 	QueuingPort channel(1, 18002, s); // Server
-	sleep(500000);
 	channel.Display();	
 
         pthread_attr_t *thread_attributes;
@@ -75,10 +74,10 @@ int  main (int argc,char* argv[])
 	mode.code=6;
 	mode.rpiMode=myFDIR.isleader();
 
-	QueuingPort channelPM(0, 18001, argv[1]);
+	QueuingPort channelPM(0, 18001, s);
         channelPM.SendQueuingMsg((char*)&mode, sizeof(ModeStruct));
 
-	QueuingPort channelCom(0, 18003, argv[1]);
+	QueuingPort channelCom(0, 18003, s);
         channelCom.SendQueuingMsg((char*)&mode, sizeof(ModeStruct));
 
 
