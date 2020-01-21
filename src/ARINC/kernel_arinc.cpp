@@ -27,89 +27,118 @@ pid_t p;
 
 int active_p; // id of the running process
 
+void update_pids(int sig)
+{
+	FILE* file=NULL;
+	file=fopen("listpid", "r");
+	if(!file)
+		printf("Failed to read listpid");
+	else
+	{
+		int tab[N] = {0};
+		fscanf(file,"%d\n%d\n%d\n", pid, pid+1, pid+2); // En fonction de N
+		printf("New pids:\n%d\n%d\n%d\n", pid[0], pid[1], pid[2]); // fct N
+	}
+}
+
 // main control loop
+int main(int argc, char *argv[]) 
+{
+	if ((argc==0) || (argc==1) ) {
+		printf("Ooops! T'as oublié les arguments, les pid des process! (argc=%d)\n", argc);
+		exit(1);
+	}
+	
+	signal(SIGUSR1, update_pids);
 
-int main(int argc, char *argv[]) {
+	printf("*** TRACE : %d %s %s %s %s %s %s \n", argc, argv[0], argv[1],argv[2],argv[3],argv[4],argv[5]);
 
-if ((argc==0) || (argc==1) ) {
-	printf("Ooops! T'as oublié les arguments, les pid des process! (argc=%d)\n", argc);
-	exit(1);
-}
+	// Initialisation of the periods
+	Tperiod[0]=TIME_P1;
+	Tperiod[1]=TIME_P2;
+	Tperiod[2]=TIME_P3;
 
-printf("*** TRACE : %d %s %s %s %s %s %s \n", argc, argv[0], argv[1],argv[2],argv[3],argv[4],argv[5]);
+	// Initialisation of P_in_frame and Tframe
+	P_in_frame[0]=0; 	Tframe[0]=SFDIR1;
+	P_in_frame[1]=1; 	Tframe[1]=SCOM1;
+	P_in_frame[2]=0; 	Tframe[2]=SFDIR2;
+	P_in_frame[3]=2;	Tframe[3]=SPM1;
 
-// Initialisation of the periods
-Tperiod[0]=TIME_P1;
-Tperiod[1]=TIME_P2;
-Tperiod[2]=TIME_P3;
-
-// Initialisation of P_in_frame and Tframe
-P_in_frame[0]=0; 	Tframe[0]=SFDIR1;
-P_in_frame[1]=1; 	Tframe[1]=SCOM1;
-P_in_frame[2]=0; 	Tframe[2]=SFDIR2;
-P_in_frame[3]=2;	Tframe[3]=SPM1;
+	// Reading partition ids (pids)
+		pid[0] = atoi(argv[1]) ; // FIRST process-partition P1
+		pid[1] = atoi(argv[2]) ; // SECOND process-partition P2
+		pid[2] = atoi(argv[3]) ; // THIRD process-partition P3
 
 
-// Main body of the program
-
-// Reading partition ids (pids)
-	pid[0] = atoi(argv[1]) ; // FIRST process-partition P1
-	pid[1] = atoi(argv[2]) ; // SECOND process-partition P2
-	pid[2] = atoi(argv[3]) ; // THIRD process-partition P3
-
-printf("********* LIST OF PARTITION IDS************\n");
-
-for (i=0; i<N; i++)
-	printf("pids - P%d:	%d\n",i,pid[i]);
-
-printf("********* LIST OF PARTITION TIME BUDGET ************\n");
-
-for (i=0; i<N; i++)
-	printf("TIME_P - P%d:	%d\n",i,Tperiod[i]);
-
-printf("********* LIST OF PARTITION IN THE TIME FRAME  ************\n");
-
-for (i=0; i<A; i++)
-	printf("P%d:	%d\n",P_in_frame[i],Tframe[i]);
-
-printf("********* STOPPING ALL PARTITION IDS************\n");
-
-for (i=0; i<N; i++){
-        printf("STOP - P%d:     %d\n",i,pid[i]);
-	kill (pid[i],  SIGSTOP);
-}
-
-printf("********* WAITING BEF0RE SCHEDULING LOOP  ************\n");
-printf("********* All partitions must be stopped  ************\n");
-
-sleep (10);
+	// Writing ARINC pid in a file
+	int pid_ARINC=getpid();
+	FILE* fichierPid=NULL;
+	fichierPid=fopen("pid_ARINC","w");
+	if(!fichierPid)
+	{
+		printf("Failed to open pid_ARINC");
+		exit(1);
+	}
+	fprintf(fichierPid,"%d\n",pid_ARINC);
+	fclose(fichierPid);
+	kill(pid[0], SIGUSR1); // telling FDIR it's done so it can read it
 
 
 
-printf("********* STARTING SCHEDULING LOOP ************\n");
+	// Main body of the program
+	printf("********* LIST OF PARTITION IDS************\n");
+
+	for (i=0; i<N; i++)
+		printf("pids - P%d:	%d\n",i,pid[i]);
+
+	printf("********* LIST OF PARTITION TIME BUDGET ************\n");
+
+	for (i=0; i<N; i++)
+		printf("TIME_P - P%d:	%d\n",i,Tperiod[i]);
+
+	printf("********* LIST OF PARTITION IN THE TIME FRAME  ************\n");
+
+	for (i=0; i<A; i++)
+		printf("P%d:	%d\n",P_in_frame[i],Tframe[i]);
+
+	printf("********* STOPPING ALL PARTITION IDS************\n");
+
+	for (i=0; i<N; i++){
+		printf("STOP - P%d:     %d\n",i,pid[i]);
+		kill (pid[i],  SIGSTOP);
+	}
+
+	printf("********* WAITING BEF0RE SCHEDULING LOOP  ************\n");
+	printf("********* All partitions must be stopped  ************\n");
+
+	sleep (10);
 
 
-active_p=0; // active process active_p set to 0 (1st process in major frame)
 
-while (1) {  // Scheduler infinite loop
+	printf("********* STARTING SCHEDULING LOOP ************\n");
 
-	// next process to schedule
+
+	active_p=0; // active process active_p set to 0 (1st process in major frame)
+
+	while (1) {  // Scheduler infinite loop
+
+		// next process to schedule
 	printf("Active P(%d) – PID: %d – ", active_p, pid[P_in_frame[active_p]]);
-	kill (pid[P_in_frame [active_p]], SIGCONT);
+		kill (pid[P_in_frame [active_p]], SIGCONT);
 
-	// scheduler waiting for active_p time budget
-	//printf("Tperiod: %d ms\n", Tperiod[active_p]);
+		// scheduler waiting for active_p time budget
+		//printf("Tperiod: %d ms\n", Tperiod[active_p]);
 	printf("T: %d ms\n", Tframe[active_p]);
-	//usleep (Tperiod[active_p]*1000); // parameter in usec
-	usleep (Tframe[active_p]*1000); // parameter in usec
+		//usleep (Tperiod[active_p]*1000); // parameter in usec
+		usleep (Tframe[active_p]*1000); // parameter in usec
 
-	// stop active_p after time budget elapsed
-	kill (pid[P_in_frame[active_p]], SIGSTOP);
+		// stop active_p after time budget elapsed
+		kill (pid[P_in_frame[active_p]], SIGSTOP);
 
-	// set active_p to next (modulo N, number of partitions)
-	
-	active_p=(active_p + 1) % A;
-	
-} // end of while - end of main loop
+		// set active_p to next (modulo N, number of partitions)
+		
+		active_p=(active_p + 1) % A;
+		
+	} // end of while - end of main loop
 
 }; // end of program

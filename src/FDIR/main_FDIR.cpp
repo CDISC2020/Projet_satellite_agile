@@ -20,6 +20,8 @@ using namespace std;
 FDIR myFDIR;
 bool set_wd_ard=false;
 char s[100];
+bool rec_COM=false;
+bool rec_PM=false;
 
 int arinc_pid=-1;
  
@@ -35,6 +37,8 @@ void* gestion_wd_arduino(void* args)
 			usleep(20000);
 			set_wd_ard=false;
 		}
+
+		usleep(100);
 	}
 
 	return NULL;
@@ -96,30 +100,52 @@ void recouvrement_COM()
 {
 	// tolere faute par crash pas par freeze, sinon faut tuer process avant et donc recup les pid de tout le monde
 
-	// reboot COM
-	system("xterm -e ./main_COM &");
-	sleep(2);
+	if(rec_COM)
+	{
+		// autre time out
+		cout << "faut changer de raspy my boi" << endl;
+	}
+	else
+	{
+		rec_COM=true;
 
-	// maj du listpid
-	maj_listpid();
+		raise(SIGUSR2);
 
-	// previent ARINC qu'il faut prendre en compte la modif de listpid
-	kill(arinc_pid,SIGUSR1);
+		/*// reboot COM
+		system("xterm -e ./main_COM &");
+
+		// maj du listpid
+		maj_listpid();
+
+		// previent ARINC qu'il faut prendre en compte la modif de listpid
+		if(arinc_pid!=-1)
+			kill(arinc_pid,SIGUSR1);*/
+	}
 }
 
 void recouvrement_PM()
 {
 	// tolere faute par crash pas par freeze, sinon faut tuer process avant et donc recup les pid de tout le monde
 
-	// reboot PM
-	system("xterm -e ./main_PM &");
-	sleep(2);
+	if(rec_PM)
+	{
+		cout << "faut changer de raspy my boi" << endl;
+	}
+	else
+	{
+		rec_PM=true;
+		raise(SIGUSR2);
 
-	// maj du listpid
-	maj_listpid();
+		/*// reboot PM
+		system("xterm -e ./main_PM &");
 
-	// previent ARINC qu'il faut prendre en compte la modif de listpid
-	kill(arinc_pid,SIGUSR1);
+		// maj du listpid
+		maj_listpid();
+
+		// previent ARINC qu'il faut prendre en compte la modif de listpid
+		if(arinc_pid!=-1)
+			kill(arinc_pid,SIGUSR1);*/
+	}
 }
 
 // signal handler
@@ -137,9 +163,22 @@ void ARINC_PID(int signal)
 	arinc_pid=atoi(line.c_str());
 }
 
+void signal2(int sig)
+{
+	cout << "MAJ PID" << endl;
+	system("xterm -e ./main_PM &");
+	sleep(1);
+	maj_listpid();
+	cout << "arinc_pid=" << arinc_pid << endl;
+	if(arinc_pid!=-1)
+		kill(arinc_pid,SIGUSR1);
+}
 
 int  main (int argc,char* argv[]) 
 {
+	signal(SIGUSR1,ARINC_PID);
+	signal(SIGUSR2,signal2);
+
 	// Ecriture du pid dans un fichier
 	int pid=getpid();
 	ofstream fichierPid;
@@ -150,6 +189,7 @@ int  main (int argc,char* argv[])
 	}
 	fichierPid << pid << endl;
 	fichierPid.close();
+
 	
 	if (gethostname(s, 100) != 0) {
     		perror("S-> gethostname");
@@ -188,7 +228,7 @@ int  main (int argc,char* argv[])
 	while(1) 
 	{	
 		channel.RecvQueuingMsg(buffer);
-		printf("Message : %s \n",buffer);
+		//printf("Message : %s \n",buffer);
 
 		if (buffer[0]=='C')
 		{
@@ -200,7 +240,7 @@ int  main (int argc,char* argv[])
 			if (myFDIR.read_watch_com()==0) // on test si le compteur est a 0
 			{
 				cout << "com KC" << endl; //ça fait trop longtemps qu'on a pas de nouvelles
-				//recouvrement_COM();
+				recouvrement_COM();
 			}
 			else
 				myFDIR.dec_watch_com();// si on a pas de nouvelles, on decremente le compteur
@@ -216,7 +256,7 @@ int  main (int argc,char* argv[])
 			if (myFDIR.read_watch_plan()==0) // on test si le compteur est a 0
 			{
 				cout << "plan KC" << endl; //ça fait trop longtemps qu'on a pas de nouvelles
-				//recouvrement_PM();
+				recouvrement_PM();
 			}
 			else
 				myFDIR.dec_watch_plan();// si on a pas de nouvelles, on decremente le compteur
