@@ -117,7 +117,7 @@ void PlanManager::executePlan(Controller* control,QueuingPort* ChannelCom, bool 
 				{
 					PlanFilePath PhotoPath;
 					PhotoPath.code = 3;
-					string aux =  ((PhotoInstruction*)currentInst)->getPhotoName();
+					string aux =  ((PhotoInstruction*)currentInst)->getPhotoName(); // attention chemin
 					strcpy (PhotoPath.filepath , aux.c_str()) ;
 					printf("Sending the photo %s \n", PhotoPath.filepath);
 					ChannelCom->SendQueuingMsg((char*)&PhotoPath, sizeof(PlanFilePath));

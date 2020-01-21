@@ -20,7 +20,8 @@ void Controller::executeInstruction(GenericInstruction* instruction, int* respon
 
 		cout << endl << "New photo! Smile!" << endl;
 		cout<<"name ="<<C.photoName<<"    exposure = "<<C.exposure<<endl;
-                sc.returnControl = myCameraController.photoShoot((string) C.photoName, C.exposure);
+		string path="src/communication/toSend/" + (string) C.photoName;
+                sc.returnControl = myCameraController.photoShoot(path, C.exposure);
 		if(sc.returnControl)
 		{
 			//call traitement image

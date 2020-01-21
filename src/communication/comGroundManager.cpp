@@ -140,17 +140,18 @@ void* Communic_Sol(void* args)
 				{
 
 					// envoyer les images existentes
-					sprintf(cmde, "sh src/communication/uploadStoG.sh %s", imageList[ptImageSent].c_str()); 
+					sprintf(cmde, "sh src/communication/uploadStoG.sh"); 
 					system(cmde);
 					sleep(1);
 					cout << "Image sent \n" << endl;
 
 					//enlever du satellite l'image envoyée au sol
-					sprintf(cmde, "rm %s", imageList[ptImageSent].c_str());
-					system(cmde);
+					//sprintf(cmde, "rm *.jpg");
+					//system(cmde);
 					cout << "Image removed\n" << endl;
 
-					ptImageSent = (ptImageSent + 1)%128;
+					//ptImageSent = (ptImageSent + 1)%128;
+					ptImageSent=ptImageReceived;
 
 				}// lancer bash qui envoie chaque photo du tableau.
 				string rep_demande_img= dir_plan + name_dem;
