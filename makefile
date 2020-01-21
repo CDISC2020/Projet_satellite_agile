@@ -46,41 +46,41 @@ all:
 
 ############################ COMPILATION ################################
 
-ARINC_Com:  $(ARINC)ARINC_Com.cpp $(ARINC)ARINC_Com.h
-	$(CC) -c $(ARINC)ARINC_Com.cpp $(ARINC)ARINC_Com.h
+ARINC_Com:  $(ARINC)ARINC_Com.cpp
+	$(CC) -c $(ARINC)ARINC_Com.cpp
 
-genericInstruction: $(PLAN)genericInstruction.cpp $(PLAN)genericInstruction.h
-	$(CC) -c $(PLAN)genericInstruction.cpp $(PLAN)genericInstruction.h
+genericInstruction: $(PLAN)genericInstruction.cpp 
+	$(CC) -c $(PLAN)genericInstruction.cpp 
 
-plan: $(PLAN)plan.cpp $(PLAN)plan.h
-	$(CC) -c $(PLAN)plan.cpp $(PLAN)plan.h
+plan: $(PLAN)plan.cpp
+	$(CC) -c $(PLAN)plan.cpp
 
-planManager: $(PLAN)planManager.cpp $(PLAN)planManager.h $(PLAN)main_PM.cpp $(FDIR)FDIR.h
-	$(CC) -c $(PLAN)planManager.cpp $(PLAN)planManager.h $(PLAN)main_PM.cpp $(FDIR)FDIR.h
+planManager: $(PLAN)planManager.cpp $(PLAN)main_PM.cpp
+	$(CC) -c $(PLAN)planManager.cpp $(PLAN)main_PM.cpp
 
-comGroundManager: $(COM)comGroundManager.cpp $(FDIR)FDIR.h
-	$(CC) -c $(COM)comGroundManager.cpp $(FDIR)FDIR.h
+comGroundManager: $(COM)comGroundManager.cpp 
+	$(CC) -c $(COM)comGroundManager.cpp 
 
-statusManager:  $(COM)statusManager.cpp $(COM)statusManager.h
-	$(CC) -c $(COM)statusManager.cpp $(COM)statusManager.h
+statusManager:  $(COM)statusManager.cpp 
+	$(CC) -c $(COM)statusManager.cpp
 
 ground: $(COM)Ground.cpp
 	$(CC) -c $(COM)Ground.cpp
 
-attitudeController:  $(PLAN)attitudeController.cpp $(PLAN)attitudeController.h
-	$(CC) -c $(PLAN)attitudeController.cpp $(PLAN)attitudeController.h
+attitudeController:  $(PLAN)attitudeController.cpp
+	$(CC) -c $(PLAN)attitudeController.cpp
 
-cameraController:  $(PLAN)cameraController.cpp $(PLAN)cameraController.h
-	$(CC) -c $(PLAN)cameraController.cpp $(PLAN)cameraController.h
+cameraController:  $(PLAN)cameraController.cpp
+	$(CC) -c $(PLAN)cameraController.cpp
 
-controller: $(PLAN)Controller.cpp $(PLAN)Controller.h
-	$(CC) -c $(PLAN)Controller.cpp $(PLAN)Controller.h
+controller: $(PLAN)Controller.cpp 
+	$(CC) -c $(PLAN)Controller.cpp
 
-gpio : $(GPIO)GPIO.cpp $(GPIO)GPIO.h
-	$(CC) -c $(GPIO)GPIO.cpp $(GPIO)GPIO.h
+gpio : $(GPIO)GPIO.cpp
+	$(CC) -c $(GPIO)GPIO.cpp
 
-fdir: $(FDIR)FDIR.cpp $(FDIR)FDIR.h $(FDIR)watchdog_arduino.cpp $(FDIR)watchdog_arduino.h $(FDIR)WatchdogInterne.cpp $(FDIR)WatchdogInterne.h $(FDIR)main_FDIR.cpp
-	$(CC) -c $(FDIR)FDIR.cpp $(FDIR)FDIR.h $(FDIR)watchdog_arduino.cpp $(FDIR)watchdog_arduino.h $(FDIR)WatchdogInterne.cpp $(FDIR)WatchdogInterne.h $(FDIR)main_FDIR.cpp
+fdir: $(FDIR)FDIR.cpp $(FDIR)watchdog_arduino.cpp $(FDIR)WatchdogInterne.cpp $(FDIR)main_FDIR.cpp
+	$(CC) -c $(FDIR)FDIR.cpp $(FDIR)watchdog_arduino.cpp $(FDIR)WatchdogInterne.cpp $(FDIR)main_FDIR.cpp
 
 
 ############################### LINKAGE ####################################
@@ -106,8 +106,8 @@ main_Ground: Ground.o
 ###############
 # Noyau ARINC #
 ###############
-kernel: $(ARINC)kernel_arinc.cpp $(ARINC)time_frame.h $(ARINC)config_kernel.h
-	gcc $(ARINC)kernel_arinc.cpp
+kernel: $(ARINC)kernel_arinc.c $(ARINC)time_frame.h $(ARINC)config_kernel.h
+	gcc $(ARINC)kernel_arinc.c
 
 
 ############################################################################
@@ -115,11 +115,12 @@ kernel: $(ARINC)kernel_arinc.cpp $(ARINC)time_frame.h $(ARINC)config_kernel.h
 clean:
 	find . -name "*.o" -type f -delete
 	find . -name "*.gch" -type f -delete
-
 success:
 	echo "\n[ Make successful! ]\n"
 
 reset:
+	find . -name "*.o" -type f -delete
+	find . -name "*.gch" -type f -delete
 	find . -name "main_PM" -type f -delete
 	find . -name "main_Com_ST" -type f -delete
 	find . -name "main_FDIR" -type f -delete
