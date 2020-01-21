@@ -46,7 +46,7 @@ int main (int argc,char* argv[])
 
 		else if (c=='r')  // Demande des photos
 		{
-			sprintf(cmde, "sh ../src/communication/uploadGtoSplans.sh %s", "demande_imgs.txt");
+			sprintf(cmde, "sh ../src/communication/uploadGtoSplans.sh demande_imgs.txt");
 			system(cmde);
 			printf("Demande image envoyée");
 			cout << "Receiving the images..." << endl;
