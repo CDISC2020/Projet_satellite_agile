@@ -290,12 +290,15 @@ int main (int argc, char* argv[])
 	int pid=getpid();
 	ofstream fichierPid;
 	fichierPid.open("pid_COM");
+	if(!fichierPid)	{
+		cout << "Failed to open pid_COM" << endl;
+		exit(1);
+	}
 	fichierPid << pid << endl;
 	fichierPid.close();
 
 	// Recuperation du hostname
-	if (gethostname(s, 100) != 0)
-	{
+	if (gethostname(s, 100) != 0){
 		perror("S-> gethostname");
 		exit(1);
 	}

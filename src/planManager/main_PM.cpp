@@ -33,6 +33,8 @@ QueuingPort* channelFDIR;		// Client vers FDIR
 QueuingPort* channelSM; 		// Client_PM vers com ground / SM
 QueuingPort* channelReceptionPM; 	// Server_PM
 
+Plan* planBack = NULL;
+
 pthread_mutex_t* mu=new pthread_mutex_t();  // Mutex sur la gestion des plans
 
 /*-----------------------SERVEUR--------------------------*/
@@ -77,19 +79,8 @@ void * Server_PM(void *args)
 
 			// Comment cancel une TM !!? 
 			pthread_mutex_lock(mu);              // verrouiller la ressource partagé
-			Plan* planBack = PM.backup(); // on save ancien plan
+			planBack = PM.backup(); // on save ancien plan
 			PM.generatePlan(f->filepath); 
-
-			while(PM.backup()!=NULL) // on execute la telecommande
-			{
-				cout << endl << "Execute TM" << endl;
-				PM.executePlan(&control, channelSM, mode);
-				usleep(500000);
-			}
-
-			PM.destructPlan();	// On recharge le plan precedent
-			if(planBack!=NULL)	// S'il existe
-				PM.recover(planBack);
 			pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
                 }
 
@@ -113,6 +104,12 @@ void proceed()
 	cout << endl << "Fonctionnement" << endl;
 	pthread_mutex_lock(mu);              // verrouiller la ressource partagé
 	PM.executePlan(&control, channelSM, mode);
+	if(planBack!=NULL)	// S'il existe
+	{
+		cout << endl << "TM Exécutée" << endl;
+		PM.recover(planBack);
+		planBack=NULL;
+	}
 	pthread_mutex_unlock(mu);            // deverrouiller la ressource partagé
 	usleep(500000);
 }
@@ -168,12 +165,15 @@ int  main (int argc,char* argv[])
 	int pid=getpid();
 	ofstream fichierPid;
 	fichierPid.open("pid_PM");
+	if(!fichierPid) {
+		cout << "Failed to open pid_PM" << endl;
+		exit(1);
+	}
 	fichierPid << pid << endl;
 	fichierPid.close();
 
 	// Recuperation du hostname
-	if (gethostname(s, 100) != 0)
-	{
+	if (gethostname(s, 100) != 0){
 	    perror("S-> gethostname");
 	    exit(1);
 	}

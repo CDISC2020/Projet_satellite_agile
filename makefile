@@ -129,6 +129,7 @@ reset:
 	find . -name "pid_COM" -type f -delete
 	find . -name "pid_FDIR" -type f -delete
 	find . -name "pid_PM" -type f -delete
+	find . -name "pid_ARINC" -type f -delete
 	find . -name "LogError.txt" -type f -delete
 	find src/planManager/plans/ -name "[!.]*" -type f -delete
 	find src/planManager/tm/ -name "[!.]*" -type f -delete

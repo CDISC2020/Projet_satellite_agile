@@ -9,7 +9,7 @@ using namespace std;
 
 FDIR::FDIR() 
 {
-	leader=false;
+	leader=true;
 }
 
 //on peut optimiser le nombre de méthodes en donnant un attribut aux différents WD, si jamais on a le temps

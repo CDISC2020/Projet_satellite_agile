@@ -20,6 +20,8 @@ using namespace std;
 FDIR myFDIR;
 bool set_wd_ard=false;
 char s[100];
+
+int arinc_pid=-1;
  
 void* gestion_wd_arduino(void* args)
 {
@@ -38,6 +40,103 @@ void* gestion_wd_arduino(void* args)
 	return NULL;
 }
 
+void maj_listpid()
+{
+	string line;
+	string listpid;
+	ifstream fichier;
+	ofstream wfichier;
+
+	// Lecture pid FDIR
+	fichier.open("pid_FDIR");
+	if(!fichier){
+		cout << "Failed to open pid_FDIR" << endl;
+		exit(1);
+	}
+	getline(fichier,line);
+	listpid.append(line);
+	listpid.append("\n");
+	fichier.close();
+
+	// Lecture pid COM
+	fichier.open("pid_COM");
+	if(!fichier){
+		cout << "Failed to open pid_FDIR" << endl;
+		exit(1);
+	}
+	getline(fichier,line);
+	listpid.append(line);
+	listpid.append("\n");
+	fichier.close();
+
+	// Lecture pid PM
+	fichier.open("pid_PM");
+	if(!fichier){
+		cout << "Failed to open pid_FDIR" << endl;
+		exit(1);
+	}
+	getline(fichier,line);
+	listpid.append(line);
+	listpid.append("\n");
+	fichier.close();
+
+////////// Ecritude du listpid
+	cout << "listpid=" << listpid << endl;
+	wfichier.open("listpid");
+	if(!wfichier)
+	{
+		cout << "Failed to open listpid" << endl;
+		exit(1);
+	}
+	wfichier << listpid;
+	wfichier.close();
+}	
+
+void recouvrement_COM()
+{
+	// tolere faute par crash pas par freeze, sinon faut tuer process avant et donc recup les pid de tout le monde
+
+	// reboot COM
+	system("xterm -e ./main_COM &");
+	sleep(2);
+
+	// maj du listpid
+	maj_listpid();
+
+	// previent ARINC qu'il faut prendre en compte la modif de listpid
+	kill(arinc_pid,SIGUSR1);
+}
+
+void recouvrement_PM()
+{
+	// tolere faute par crash pas par freeze, sinon faut tuer process avant et donc recup les pid de tout le monde
+
+	// reboot PM
+	system("xterm -e ./main_PM &");
+	sleep(2);
+
+	// maj du listpid
+	maj_listpid();
+
+	// previent ARINC qu'il faut prendre en compte la modif de listpid
+	kill(arinc_pid,SIGUSR1);
+}
+
+// signal handler
+void ARINC_PID(int signal)
+{
+	ifstream fichier;
+	fichier.open("pid_ARINC");
+	string line;
+	if(!fichier)
+	{
+		cout << "Failed to open pid_ARINC" << endl;
+		exit(1);
+	}
+	getline(fichier,line);
+	arinc_pid=atoi(line.c_str());
+}
+
 
 int  main (int argc,char* argv[]) 
 {
@@ -45,11 +144,14 @@ int  main (int argc,char* argv[])
 	int pid=getpid();
 	ofstream fichierPid;
 	fichierPid.open("pid_FDIR");
+	if(!fichierPid)	{
+		cout << "Failed to open pid_FDIR" << endl;
+		exit(1);
+	}
 	fichierPid << pid << endl;
 	fichierPid.close();
 	
-	if (gethostname(s, 100) != 0) 
-	{
+	if (gethostname(s, 100) != 0) {
     		perror("S-> gethostname");
     		exit(1);
   	}
@@ -96,7 +198,10 @@ int  main (int argc,char* argv[])
 		else
 		{
 			if (myFDIR.read_watch_com()==0) // on test si le compteur est a 0
+			{
 				cout << "com KC" << endl; //ça fait trop longtemps qu'on a pas de nouvelles
+				//recouvrement_COM();
+			}
 			else
 				myFDIR.dec_watch_com();// si on a pas de nouvelles, on decremente le compteur
 		}
@@ -109,7 +214,10 @@ int  main (int argc,char* argv[])
 		else
 		{
 			if (myFDIR.read_watch_plan()==0) // on test si le compteur est a 0
+			{
 				cout << "plan KC" << endl; //ça fait trop longtemps qu'on a pas de nouvelles
+				//recouvrement_PM();
+			}
 			else
 				myFDIR.dec_watch_plan();// si on a pas de nouvelles, on decremente le compteur
 		}
