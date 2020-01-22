@@ -1,4 +1,4 @@
-#define A 4  // number of partition activation per time frame 
+#define A 3  // number of partition activation per time frame 
 
 // Time budget for partitions ACTIVATION in milliseconds
 // PERIOD for P1 = P11 = 8000
@@ -7,7 +7,6 @@
 
 #define SFDIR1 5
 #define SCOM1 10
-#define SFDIR2 5
 #define SPM1 10
 
 

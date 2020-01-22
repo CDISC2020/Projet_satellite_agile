@@ -61,8 +61,7 @@ int main(int argc, char *argv[])
 	// Initialisation of P_in_frame and Tframe
 	P_in_frame[0]=0; 	Tframe[0]=SFDIR1;
 	P_in_frame[1]=1; 	Tframe[1]=SCOM1;
-	P_in_frame[2]=0; 	Tframe[2]=SFDIR2;
-	P_in_frame[3]=2;	Tframe[3]=SPM1;
+	P_in_frame[2]=2;	Tframe[2]=SPM1;
 
 	// Reading partition ids (pids)
 		pid[0] = atoi(argv[1]) ; // FIRST process-partition P1
