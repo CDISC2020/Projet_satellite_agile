@@ -112,20 +112,10 @@ kernel: $(ARINC)kernel_arinc.c $(ARINC)time_frame.h $(ARINC)config_kernel.h
 
 ############################################################################
 
+# Remove temporary files
 clean:
 	find . -name "*.o" -type f -delete
-	find . -name "*.gch" -type f -delete
-success:
-	echo "\n[ Make successful! ]\n"
-
-reset:
-	find . -name "*.o" -type f -delete
-	find . -name "*.gch" -type f -delete
-	find . -name "main_PM" -type f -delete
-	find . -name "main_Com_ST" -type f -delete
-	find . -name "main_FDIR" -type f -delete
-	find . -name "main_Ground" -type f -delete
-	find . -name "a.out" -type f -delete
+	find . -name "*.gch" -type f -delete	
 	find . -name "listpid" -type f -delete
 	find . -name "pid_COM" -type f -delete
 	find . -name "pid_FDIR" -type f -delete
@@ -138,7 +128,33 @@ reset:
 	find src/communication/tmRecuSol -name "[!.]*" -type f -delete
 	find src/communication/toSend -name "[!.]*" -type f -delete
 	find Ground/received -name "[!.]*" -type f -delete
- 
+
+success:
+	echo "\n[ Make successful! ]\n"
+
+# Original state
+reset:
+	find . -name "main_PM" -type f -delete
+	find . -name "main_Com_ST" -type f -delete
+	find . -name "main_FDIR" -type f -delete
+	find . -name "main_Ground" -type f -delete
+	find . -name "a.out" -type f -delete
+	find . -name "*.o" -type f -delete
+	find . -name "*.gch" -type f -delete
+	find . -name "listpid" -type f -delete
+	find . -name "pid_COM" -type f -delete
+	find . -name "pid_FDIR" -type f -delete
+	find . -name "pid_PM" -type f -delete
+	find . -name "pid_ARINC" -type f -delete
+	find . -name "LogError.txt" -type f -delete
+	find src/planManager/plans/ -name "[!.]*" -type f -delete
+	find src/planManager/tm/ -name "[!.]*" -type f -delete
+	find src/communication/planRecuSol -name "[!.]*" -type f -delete
+	find src/communication/tmRecuSol -name "[!.]*" -type f -delete
+	find src/communication/toSend -name "[!.]*" -type f -delete
+	find Ground/received -name "[!.]*" -type f -delete
+
+# If clock screwed problem
 touch:
 	touch makefile
 	touch src/communication/*
