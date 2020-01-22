@@ -101,7 +101,7 @@ void* Communic_Sol(void* args)
 	// Dossiers reception
 	string dir_plan = string("src/communication/planRecuSol/");
 	string dir_tm = string("src/communication/tmRecuSol/");
-	string dir_log = string("src/communication/");
+	string dir_log = string("./");
 
 	// Fichier a chercher
 	string name_dem = "demande_imgs.txt";
@@ -133,32 +133,26 @@ void* Communic_Sol(void* args)
 				sprintf(cmde, "mv %s%s %s", dir_log.c_str(), name_log.c_str(), c_log.c_str());
 				system(cmde);
 
-				sprintf(cmde, "sh src/communication/uploadStoG.sh LogError.txt");
+				// envoyer tous fichiers de toSend existentes
+				sprintf(cmde, "sh src/communication/uploadStoG.sh"); 
 				system(cmde);
+				sleep(1);
+				cout << "Images and log sent \n" << endl;
 
-				while(ptImageSent != ptImageReceived)
-				{
+				//enlever du satellite les fichiers envoyés au sol
+				sprintf(cmde, "rm %s*.jpg", c_log.c_str());
+				system(cmde);
+				sprintf(cmde, "rm %s*.txt", c_log.c_str());
+				system(cmde);
+				cout << "Image and log removed\n" << endl;
 
-					// envoyer les images existentes
-					sprintf(cmde, "sh src/communication/uploadStoG.sh"); 
-					system(cmde);
-					sleep(1);
-					cout << "Image sent \n" << endl;
+				ptImageSent=ptImageReceived;
 
-					//enlever du satellite l'image envoyée au sol
-					//sprintf(cmde, "rm *.jpg");
-					//system(cmde);
-					cout << "Image removed\n" << endl;
 
-					//ptImageSent = (ptImageSent + 1)%128;
-					ptImageSent=ptImageReceived;
-
-				}// lancer bash qui envoie chaque photo du tableau.
 				string rep_demande_img= dir_plan + name_dem;
-				sleep(5);
 				remove(rep_demande_img.c_str());
 				cout << "Request removed\n";
-				sleep(5);
+				sleep(1);
 			}
 			
 			/*****************************[ CGM ---PLAN---> PM ]**********************************/

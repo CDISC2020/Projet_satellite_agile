@@ -266,7 +266,7 @@ int  main (int argc,char* argv[])
 			if (myFDIR.read_watch_com()==0) // on test si le compteur est a 0
 			{
 				cout << "com KC" << endl; //ça fait trop longtemps qu'on a pas de nouvelles
-				recouvrement_COM();
+				//recouvrement_COM();
 			}
 			else
 				myFDIR.dec_watch_com();// si on a pas de nouvelles, on decremente le compteur
@@ -282,7 +282,7 @@ int  main (int argc,char* argv[])
 			if (myFDIR.read_watch_plan()==0) // on test si le compteur est a 0
 			{
 				cout << "plan KC" << endl; //ça fait trop longtemps qu'on a pas de nouvelles
-				recouvrement_PM();
+				//recouvrement_PM();
 			}
 			else
 				myFDIR.dec_watch_plan();// si on a pas de nouvelles, on decremente le compteur
