@@ -104,9 +104,9 @@ void proceed()
 	cout << endl << "Fonctionnement" << endl;
 	pthread_mutex_lock(mu);              // verrouiller la ressource partagé
 	PM.executePlan(&control, channelSM, mode);
-	if(planBack!=NULL)	// S'il existe
+	if(planBack!=NULL && PM.backup()==NULL)	// S'il existe
 	{
-		cout << endl << "TM Exécutée" << endl;
+		cout << endl << "TM Executee" << endl;
 		PM.recover(planBack);
 		planBack=NULL;
 	}
