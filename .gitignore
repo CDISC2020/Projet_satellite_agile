@@ -11,7 +11,6 @@ pid_PM
 pid_FDIR
 pid_ARINC
 LogError.txt
-demande_imgs.txt
 src/planManager/plans/*
 src/planManager/tm/*
 src/communication/tmRecuSol/*
