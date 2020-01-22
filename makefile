@@ -106,7 +106,7 @@ main_Ground: Ground.o
 ###############
 # Noyau ARINC #
 ###############
-kernel: $(ARINC)kernel_arinc.c $(ARINC)time_frame.h $(ARINC)config_kernel.h
+kernel: $(ARINC)kernel_arinc.c
 	gcc $(ARINC)kernel_arinc.c
 
 
