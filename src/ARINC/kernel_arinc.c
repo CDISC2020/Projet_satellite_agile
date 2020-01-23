@@ -50,12 +50,12 @@ int main(int argc, char *argv[])
 
 	printf("*** TRACE : %d %s %s %s %s %s %s \n", argc, argv[0], argv[1],argv[2],argv[3],argv[4],argv[5]);
 
-	// Initialisation of P_in_frame and Tframe
+	// Initialisation of P_in_frame and Tframe (A)
 	P_in_frame[0]=0; 	Tframe[0]=SFDIR1;
 	P_in_frame[1]=1; 	Tframe[1]=SCOM1;
 	P_in_frame[2]=2;	Tframe[2]=SPM1;
 
-	// Reading partition ids (pids)
+	// Reading partition ids (pids) (N)
 		pid[0] = atoi(argv[1]) ; // FIRST process-partition P1
 		pid[1] = atoi(argv[2]) ; // SECOND process-partition P2
 		pid[2] = atoi(argv[3]) ; // THIRD process-partition P3
