@@ -139,22 +139,9 @@ reset:
 	find . -name "main_FDIR" -type f -delete
 	find . -name "main_Ground" -type f -delete
 	find . -name "a.out" -type f -delete
-	find . -name "*.o" -type f -delete
-	find . -name "*.gch" -type f -delete
-	find . -name "listpid" -type f -delete
-	find . -name "pid_COM" -type f -delete
-	find . -name "pid_FDIR" -type f -delete
-	find . -name "pid_PM" -type f -delete
-	find . -name "pid_ARINC" -type f -delete
-	find . -name "LogError.txt" -type f -delete
-	find src/planManager/plans/ -name "[!.]*" -type f -delete
-	find src/planManager/tm/ -name "[!.]*" -type f -delete
-	find src/communication/planRecuSol -name "[!.]*" -type f -delete
-	find src/communication/tmRecuSol -name "[!.]*" -type f -delete
-	find src/communication/toSend -name "[!.]*" -type f -delete
-	find Ground/received -name "[!.]*" -type f -delete
-
-# If clock screwed problem
+	$(MAKE) clean
+	
+# If clock screw detected problem
 touch:
 	touch makefile
 	touch src/communication/*
