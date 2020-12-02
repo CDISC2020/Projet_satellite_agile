@@ -26,11 +26,12 @@ void Controller::executeInstruction(GenericInstruction* instruction, int* respon
 		{
 			//call traitement image
 			/*char cmde[100]="";
-			sprintf(cmde,"python traitement_image.py %s &", path.c_str());
+			remove("res_image_processing.txt")
+			sprintf(cmde,"python image_processing.py %s &", path.c_str());
 			system(cmde);
 			sleep(3);
 			ifstream file;
-			file.open(path);
+			file.open("res_image_processing.txt");
 			if(!file){
 				cout << "No response from image processing" << endl;
 				*responseController=1; // Let the Ground choose if ok
@@ -43,10 +44,15 @@ void Controller::executeInstruction(GenericInstruction* instruction, int* respon
 					*responseController=1;
 				else
 					*responseController=-1;
+				file.close();
+				remove("res_image_processing.txt")
 			}
 			*/
-			// by pass algo
+
+			// by pass algo, algo expensive to execute, never really tested
+			// remove this line if the above isn't commented
 			*responseController=1;
+			//////
 		}
 		else
 			*responseController=-1;

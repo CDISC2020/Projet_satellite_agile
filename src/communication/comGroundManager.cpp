@@ -270,7 +270,7 @@ void* am_alive(void* args)
 			channelFDIR.SendQueuingMsg(str, sizeof(str));
 			wtc = 0;
 		}
-		usleep(20*1000); //20 ms
+		usleep(10*1000); //10 ms
 	}
 
 	return NULL;

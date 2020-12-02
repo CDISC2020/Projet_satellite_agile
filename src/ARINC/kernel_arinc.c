@@ -10,11 +10,8 @@
 #include <sys/sem.h>
 
 #include "config_kernel.h"
-#include "time_frame.h"
 
 pid_t pid[N]; // table of pid, one per partition 
-
-int Tperiod[N]; // table of periods, i.e. time budget per partition
 
 int Tframe[A]; // table of time slot allocated to partition in the major frame
 int P_in_frame[A]; // table of partition actuvation sequence
@@ -53,18 +50,12 @@ int main(int argc, char *argv[])
 
 	printf("*** TRACE : %d %s %s %s %s %s %s \n", argc, argv[0], argv[1],argv[2],argv[3],argv[4],argv[5]);
 
-	// Initialisation of the periods
-	Tperiod[0]=TIME_P1;
-	Tperiod[1]=TIME_P2;
-	Tperiod[2]=TIME_P3;
-
-	// Initialisation of P_in_frame and Tframe
+	// Initialisation of P_in_frame and Tframe (A)
 	P_in_frame[0]=0; 	Tframe[0]=SFDIR1;
 	P_in_frame[1]=1; 	Tframe[1]=SCOM1;
-	P_in_frame[2]=0; 	Tframe[2]=SFDIR2;
-	P_in_frame[3]=2;	Tframe[3]=SPM1;
+	P_in_frame[2]=2;	Tframe[2]=SPM1;
 
-	// Reading partition ids (pids)
+	// Reading partition ids (pids) (N)
 		pid[0] = atoi(argv[1]) ; // FIRST process-partition P1
 		pid[1] = atoi(argv[2]) ; // SECOND process-partition P2
 		pid[2] = atoi(argv[3]) ; // THIRD process-partition P3
@@ -90,11 +81,6 @@ int main(int argc, char *argv[])
 
 	for (i=0; i<N; i++)
 		printf("pids - P%d:	%d\n",i,pid[i]);
-
-	printf("********* LIST OF PARTITION TIME BUDGET ************\n");
-
-	for (i=0; i<N; i++)
-		printf("TIME_P - P%d:	%d\n",i,Tperiod[i]);
 
 	printf("********* LIST OF PARTITION IN THE TIME FRAME  ************\n");
 
@@ -123,20 +109,17 @@ int main(int argc, char *argv[])
 	while (1) {  // Scheduler infinite loop
 
 		// next process to schedule
-	printf("Active P(%d) – PID: %d – ", active_p, pid[P_in_frame[active_p]]);
+		printf("Active P(%d) – PID: %d – ", active_p, pid[P_in_frame[active_p]]);
 		kill (pid[P_in_frame [active_p]], SIGCONT);
 
 		// scheduler waiting for active_p time budget
-		//printf("Tperiod: %d ms\n", Tperiod[active_p]);
-	printf("T: %d ms\n", Tframe[active_p]);
-		//usleep (Tperiod[active_p]*1000); // parameter in usec
+		printf("T: %d ms\n", Tframe[active_p]);
 		usleep (Tframe[active_p]*1000); // parameter in usec
 
 		// stop active_p after time budget elapsed
 		kill (pid[P_in_frame[active_p]], SIGSTOP);
 
-		// set active_p to next (modulo N, number of partitions)
-		
+		// set active_p to next (modulo A, number of partitions per time frame)
 		active_p=(active_p + 1) % A;
 		
 	} // end of while - end of main loop

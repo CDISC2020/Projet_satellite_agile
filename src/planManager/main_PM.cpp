@@ -144,7 +144,7 @@ void* Alive(void* args)
 		char str[2]="P";
 		channelFDIR->SendQueuingMsg(str, sizeof(str));
 
-		usleep(20*1000); //10 ms
+		usleep(10*1000); //10 ms
 	}
 
 	return NULL;

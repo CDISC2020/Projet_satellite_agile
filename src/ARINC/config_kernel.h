@@ -1,10 +1,19 @@
-#define N 3  // max number of partitions or processes
+// Be careful ! //
+// In kernel_arinc.c,
+//
+// Initialisation of P_in_frame and Tframe
+// 	P_in_frame,Tframe [length=A]
+//
+//Reading partition ids (pids)
+// 	pid [length=N]
 
-// Time budget for partitions in milliseconds
-// These values correspond to PERIODs assigned to Partition
-// Used to compute the time frame and to perform verifications
+// if modified, adapt kernel_arinc.c acording to the note above
+#define N 3  // number of partitions
+#define A 3  // number of partition activation per time frame 
 
-#define TIME_P1 8000
-#define TIME_P2 26000
-#define TIME_P3 32000
+// Time budget for partitions ACTIVATION in milliseconds
+#define SFDIR1 5
+#define SCOM1 10
+#define SPM1 10
+
 
