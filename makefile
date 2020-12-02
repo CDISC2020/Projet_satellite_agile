@@ -107,7 +107,7 @@ main_Ground: Ground.o
 # Noyau ARINC #
 ###############
 kernel: $(ARINC)kernel_arinc.c
-	gcc $(ARINC)kernel_arinc.c
+	gcc $(ARINC)kernel_arinc.c -o main_arinc
 
 
 ############################################################################
@@ -139,7 +139,7 @@ reset:
 	find . -name "main_Com_ST" -type f -delete
 	find . -name "main_FDIR" -type f -delete
 	find . -name "main_Ground" -type f -delete
-	find . -name "a.out" -type f -delete
+	find . -name "main_arinc" -type f -delete
 	$(MAKE) clean
 	
 # If clock screw detected problem
